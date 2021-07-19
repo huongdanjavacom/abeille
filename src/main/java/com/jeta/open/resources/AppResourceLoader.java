@@ -1,29 +1,29 @@
 /*
  * Copyright (c) 2004 JETA Software, Inc.  All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  *
- *  o Redistributions of source code must retain the above copyright notice, 
+ *  o Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  *
- *  o Redistributions in binary form must reproduce the above copyright notice, 
- *    this list of conditions and the following disclaimer in the documentation 
+ *  o Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  o Neither the name of JETA Software nor the names of its contributors may 
- *    be used to endorse or promote products derived from this software without 
+ *  o Neither the name of JETA Software nor the names of its contributors may
+ *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -43,7 +43,7 @@ import com.jeta.open.registry.JETARegistry;
  * application code from having any need to know about the local file system
  * directory structure. It is also useful for debugging and development so we
  * can redirect resource request to debug files if needed.
- * 
+ *
  * @author Jeff Tassin
  */
 public class AppResourceLoader implements ResourceLoader {
@@ -62,7 +62,8 @@ public class AppResourceLoader implements ResourceLoader {
 	/**
 	 * @return a custom class loader for the application
 	 */
-	public ClassLoader getClassLoader() {
+	@Override
+    public ClassLoader getClassLoader() {
 		if (m_classloader == null)
 			return AppResourceLoader.class.getClassLoader();
 		else
@@ -95,12 +96,13 @@ public class AppResourceLoader implements ResourceLoader {
 	/**
 	 * Opens and returns an input stream for the given resourceName. The
 	 * resourceName is relative to the application CLASSPATH (i.e. JAR file).
-	 * 
+	 *
 	 * @param resourceName
 	 *            the relative name of the resource to open
 	 * @return an input stream for the given resourceName.
 	 */
-	public InputStream getResourceAsStream(String resourceName) throws IOException {
+	@Override
+    public InputStream getResourceAsStream(String resourceName) throws IOException {
 		ClassLoader classloader = getClassLoader();
 		return classloader.getResourceAsStream(resourceName);
 	}
@@ -108,7 +110,7 @@ public class AppResourceLoader implements ResourceLoader {
 	/**
 	 * Loads an image from disk. The image is loaded relative to the application
 	 * directory.
-	 * 
+	 *
 	 * @todo we need to cache these images
 	 */
 	public static ImageIcon getImage(String imageName) {
@@ -139,11 +141,17 @@ public class AppResourceLoader implements ResourceLoader {
 	/**
 	 * Helper utility to load an image file from the application images
 	 * directory
-	 * 
+	 *
 	 * @param imageName
 	 *            the name (and optional sub directory ) of the file to load
 	 */
-	public ImageIcon loadImage(String imageName) {
+	@Override
+    public ImageIcon loadImage(String imageName) {
+	    //TODO Temporary solution
+	    if (imageName.contains("jeta.resources/")) {
+	        imageName = imageName.replace("jeta.resources/", "");
+	    }
+
 		try {
 			ClassLoader classloader = getClassLoader();
 			java.net.URL url = classloader.getResource(imageName);
@@ -161,7 +169,8 @@ public class AppResourceLoader implements ResourceLoader {
 		return getEmptyIcon();
 	}
 
-	public void setClassLoader(ClassLoader loader) {
+	@Override
+    public void setClassLoader(ClassLoader loader) {
 		m_classloader = loader;
 	}
 
