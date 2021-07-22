@@ -19,7 +19,7 @@
 package com.jeta.swingbuilder.codegen.builder;
 
 import com.jeta.forms.store.memento.FormMemento;
-import com.jeta.swingbuilder.store.CodeModel;
+import com.jeta.open.registry.JETARegistry;
 
 public class DefaultSourceBuilder implements SourceBuilder {
 
@@ -32,28 +32,61 @@ public class DefaultSourceBuilder implements SourceBuilder {
 
 	private int m_column = 0;
 
-	public static String buildSource(CodeModel cgenmodel, FormMemento fm) {
+	public String buildSource(FormMemento fm) {
 
-		DefaultSourceBuilder builder = new DefaultSourceBuilder();
+		JETARegistry.rebind(BUILD_CONSTANT_SIZE,  fm.getCodeModel().isBuildConstant());
+		JETARegistry.rebind(BUILD_INCLUDE_BINDING,  fm.getCodeModel().isIncludeBinding());
+		
+		
+		ClassDeclarationManager decl_mgr = new ClassDeclarationManager(fm.getCodeModel(),fm.getCodeModel().getClassExtends(),fm.getCodeModel().getClassImplments());
 
-		ClassDeclarationManager decl_mgr = new ClassDeclarationManager(cgenmodel);
-		decl_mgr.setPackage(cgenmodel.getPackage());
-
-		BuilderUtils.buildConstructor(decl_mgr, cgenmodel.getClassName());
-
-		if (cgenmodel.isIncludeMain()) {
-			BuilderUtils.buildMain(decl_mgr, cgenmodel.getClassName());
+		if (fm.getCodeModel().isIncludeCtor()) {
+			BuilderUtils.buildConstructor(decl_mgr, fm.getCodeModel().getClassName());
 		}
 
-		BuilderUtils.buildFillMethod(decl_mgr);
-		BuilderUtils.buildImageLoader(decl_mgr);
-		BuilderUtils.buildApplyComponentOrientation(decl_mgr);
+		if (fm.getCodeModel().isIncludeMain()) {
+			BuilderUtils.buildMain(decl_mgr, fm.getCodeModel().getClassName());
+		}
+		if(fm.getCodeModel().isIncludeLoadImage()){
+			BuilderUtils.buildImageLoader(decl_mgr);
+		}
+		//BuilderUtils.buildApplyComponentOrientation(decl_mgr);
 
-		MethodWriter create_panel = new PanelWriter().createPanel(decl_mgr, fm);
+		PropertyWriterFactory fac = (PropertyWriterFactory) JETARegistry.lookup(PropertyWriterFactory.COMPONENT_ID);
+		MethodWriter create_panel = fac.createPanelWriter().createPanel(decl_mgr, fm);
 		BuilderUtils.buildInitializer(decl_mgr, create_panel.getMethodName() + "()");
-
+		
+		buildSourceCustom(decl_mgr);
+		
+		
+		DefaultSourceBuilder builder = new DefaultSourceBuilder();
 		decl_mgr.build(builder);
 		return builder.m_source.toString();
+	}
+	
+	public void buildSourceCustom(ClassDeclarationManager declMgr) {
+		/*
+		Collection fields = declMgr.getFields();
+		Iterator iter = fields.iterator();
+		while (iter.hasNext()) {
+			MemberVariableDeclaration field = (MemberVariableDeclaration) iter.next();
+			ComponentMemento cm = field.getMemento();
+			if(cm != null){
+				PropertiesMemento pm = null;
+				if(cm instanceof FormMemento )
+					pm = ((FormMemento)cm).getPropertiesMemento();
+				else
+					pm = ((BeanMemento)cm).getProperties();
+				if(pm.containsProperty(PROP_XXX)){
+					Object value = pm.getPropertyValue(PROP_XXX);
+					if(value instanceof IntegerProperty){
+						Integer nvalue = ((IntegerProperty)value).getValue();
+						taborders.put(nvalue, field.getVariable());
+					}
+				}
+			}
+		}
+		*/
 	}
 
 	public void closeBrace() {
@@ -73,7 +106,6 @@ public class DefaultSourceBuilder implements SourceBuilder {
 	}
 
 	public void openBrace() {
-		println();
 		print('{');
 	}
 

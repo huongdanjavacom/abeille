@@ -21,7 +21,9 @@ package com.jeta.swingbuilder.codegen.builder.properties;
 import java.lang.reflect.Method;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.forms.store.properties.DoubleProperty;
+import com.jeta.forms.store.properties.FloatProperty;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
 import com.jeta.swingbuilder.codegen.builder.PropertyWriter;
@@ -31,21 +33,24 @@ public class FloatPropertyWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
-			if (value instanceof Float || value instanceof Double) {
-				Method write = pd.getWriteMethod();
-				if (write != null) {
-					MethodStatement ms = new MethodStatement(writer.getBeanVariable(), write.getName());
-					if (value instanceof Float) {
-						ms.addParameter(value.toString() + "f");
-					}
-					else {
-						ms.addParameter(value.toString());
-					}
-
-					writer.addStatement(ms);
+			Method write = pd.getWriteMethod();
+			if (write != null) {
+				MethodStatement ms = new MethodStatement(writer.getBeanVariable(), write.getName());
+				if (value instanceof Float) {
+					ms.addParameter(value.toString() + "f");
+				}else if (value instanceof FloatProperty) {
+					ms.addParameter(String.valueOf(((FloatProperty)value).getValue()) + "f");
+				}else if (value instanceof Double) {
+					ms.addParameter(value.toString());
+				}else if (value instanceof DoubleProperty) {
+					ms.addParameter(String.valueOf(((DoubleProperty)value).getValue()));
+				}else{
+					System.out.println("error "+this.getClass().getSimpleName()+"::"+value.getClass().getName());
+					return;
 				}
+				writer.addStatement(ms);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

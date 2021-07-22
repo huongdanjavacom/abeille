@@ -34,7 +34,7 @@ import java.io.IOException;
 import com.jeta.forms.store.AbstractJETAPersistable;
 import com.jeta.forms.store.JETAObjectInput;
 import com.jeta.forms.store.JETAObjectOutput;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Defines an interface to describe a GridComponent's state in the form

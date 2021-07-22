@@ -27,23 +27,65 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.swing.Icon;
 import javax.swing.table.AbstractTableModel;
 
+import com.jeta.forms.beanmgr.BeanManager;
 import com.jeta.forms.gui.beans.DynamicBeanInfo;
 import com.jeta.forms.gui.beans.JETABean;
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.logger.FormsLogger;
+import com.jeta.forms.store.properties.BooleanProperty;
+import com.jeta.forms.store.properties.ButtonGroupProperty;
+import com.jeta.forms.store.properties.ColorProperty;
+import com.jeta.forms.store.properties.ColorProperty2;
+import com.jeta.forms.store.properties.CompoundBorderProperty;
+import com.jeta.forms.store.properties.CompoundLineProperty;
+import com.jeta.forms.store.properties.DoubleProperty;
+import com.jeta.forms.store.properties.FloatProperty;
+import com.jeta.forms.store.properties.FontProperty;
+import com.jeta.forms.store.properties.FontProperty2;
+import com.jeta.forms.store.properties.IntegerProperty;
+import com.jeta.forms.store.properties.ItemsProperty;
+import com.jeta.forms.store.properties.JETAProperty;
+import com.jeta.forms.store.properties.LongProperty;
+import com.jeta.forms.store.properties.OptionListProperty;
+import com.jeta.forms.store.properties.ScrollBarsProperty;
+import com.jeta.forms.store.properties.StringListProperty;
+import com.jeta.forms.store.properties.StringProperty;
+import com.jeta.forms.store.properties.TabbedPaneProperties;
+import com.jeta.forms.store.properties.TransformOptionsProperty;
+import com.jeta.forms.store.properties.effects.PaintProperty;
+import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.commands.CommandUtils;
 import com.jeta.swingbuilder.gui.commands.SetPropertyCommand;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
+import com.jeta.swingbuilder.gui.properties.editors.BooleanEditor;
+import com.jeta.swingbuilder.gui.properties.editors.BorderEditor;
+import com.jeta.swingbuilder.gui.properties.editors.ButtonGroupEditor;
+import com.jeta.swingbuilder.gui.properties.editors.ColorEditor;
+import com.jeta.swingbuilder.gui.properties.editors.ComboEditor;
+import com.jeta.swingbuilder.gui.properties.editors.DimensionEditor;
+import com.jeta.swingbuilder.gui.properties.editors.FillEditor;
+import com.jeta.swingbuilder.gui.properties.editors.FontEditor;
+import com.jeta.swingbuilder.gui.properties.editors.IconEditor;
+import com.jeta.swingbuilder.gui.properties.editors.ItemsEditor;
+import com.jeta.swingbuilder.gui.properties.editors.LineEditor;
+import com.jeta.swingbuilder.gui.properties.editors.NumericEditor;
+import com.jeta.swingbuilder.gui.properties.editors.ScrollBarsEditor;
+import com.jeta.swingbuilder.gui.properties.editors.StringEditor;
+import com.jeta.swingbuilder.gui.properties.editors.TabbedPaneEditor;
 import com.jeta.swingbuilder.gui.properties.editors.UnknownEditor;
+import com.jeta.swingbuilder.store.RegisteredBean;
 
 /**
  * TableModel for managing properties for a given bean.
@@ -58,9 +100,13 @@ public class PropertyTableModel extends AbstractTableModel {
 	private DynamicBeanInfo m_beaninfo;
 
 	private JETABean m_bean;
+	private Properties m_customProperties = null;
 
 	// Cached property editors.
 	private static Hashtable m_prop_editors;
+	
+	// Custom property editors.
+	private static Map m_custom_prop_editors = new HashMap();
 
 	// Shared instance of a comparator
 	private static DescriptorComparator comparator = new DescriptorComparator();
@@ -134,12 +180,16 @@ public class PropertyTableModel extends AbstractTableModel {
 				break;
 
 			case VIEW_PREFERRED:
-				if (!desc.isPreferred() || desc.isHidden()) {
-					iterator.remove();
+				//System.out.println( "PropertyTableModel.filterProps: desc: " + desc.getName() + " pref: " + desc.isPreferred() );
+				if(m_customProperties != null){
+					if(!m_customProperties.containsKey(desc.getName())){
+						iterator.remove();
+					}
+				}else{
+					if (!desc.isPreferred() || desc.isHidden()) {
+						iterator.remove();
+					}
 				}
-				// System.out.println( "PropertyTableModel.filterProps: desc: "
-				// +
-				// desc.getName() + " pref: " + desc.isPreferred() );
 				break;
 			}
 		}
@@ -207,17 +257,8 @@ public class PropertyTableModel extends AbstractTableModel {
 	 */
 	public boolean isCellEditable(int row, int col) {
 		if (col == COL_VALUE) {
-			Class type = getPropertyType(row);
-			if (type != null) {
-				PropertyEditor editor = (PropertyEditor) m_prop_editors.get(type);
-				if (editor == null)
-					return false;
-			}
-
-			JETAPropertyDescriptor pd = getPropertyDescriptor(row);
-			JETAPropertyDescriptor dpd = (JETAPropertyDescriptor) pd;
-			return dpd.isWritable();
-			// return ( pd.getWriteMethod() == null) ? false : true;
+			boolean rw = getPropertyRW(row);
+			return rw;
 		}
 		else {
 			return false;
@@ -256,6 +297,29 @@ public class PropertyTableModel extends AbstractTableModel {
 	public Class getPropertyType(int row) {
 		return m_descriptors[row].getPropertyType();
 	}
+	public Class getPropertyTypeEx(int row) {
+		Class clazz = m_descriptors[row].getPropertyType();
+		if(IntegerProperty.class.equals(clazz))
+			return Integer.class;
+		else if(FloatProperty.class.equals(clazz))
+			return Float.class;
+		else if(LongProperty.class.equals(clazz))
+			return Long.class;
+		else if(DoubleProperty.class.equals(clazz))
+			return Double.class;
+		else if(StringProperty.class.equals(clazz))
+			return String.class;
+		else if(ColorProperty.class.equals(clazz))
+			return Color.class;
+		else if(ColorProperty2.class.equals(clazz))
+			return Color.class;
+		else if(FontProperty.class.equals(clazz))
+			return Font.class;
+		else if(FontProperty2.class.equals(clazz))
+			return Font.class;
+		else
+			return clazz;
+	}
 
 	/**
 	 * Returns the PropertyDescriptor for the row.
@@ -270,9 +334,48 @@ public class PropertyTableModel extends AbstractTableModel {
 	 * in the PropertyEditorManager.
 	 */
 	public PropertyEditor getPropertyEditor(int row) {
-		Class cls = m_descriptors[row].getPropertyEditorClass();
 		PropertyEditor editor = null;
-
+		
+		String peid = m_descriptors[row].getName()+"@"+m_bean.getBeanID();
+		if(m_custom_prop_editors.containsKey(peid)){
+			try {
+				editor = (PropertyEditor) ((Class)m_custom_prop_editors.get(peid)).newInstance();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		if(editor != null){
+			if(editor instanceof JETAPropertyEditor){
+				((JETAPropertyEditor)editor).setCustom(isCustomProperties());
+				((JETAPropertyEditor)editor).setEnabled(getPropertyRW(row));
+			}
+			return editor;
+		}
+		
+		Class propertyType = getPropertyTypeEx(row);
+		if(propertyType != null){
+			peid = m_descriptors[row].getName()+"#"+propertyType.getName();
+			if(m_custom_prop_editors.containsKey(peid)){
+				try {
+					editor = (PropertyEditor) ((Class)m_custom_prop_editors.get(peid)).newInstance();
+				} catch (InstantiationException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+			if(editor != null){
+				if(editor instanceof JETAPropertyEditor){
+					((JETAPropertyEditor)editor).setCustom(isCustomProperties());
+					((JETAPropertyEditor)editor).setEnabled(getPropertyRW(row));
+				}
+				return editor;
+			}
+		}
+		
+		Class cls = m_descriptors[row].getPropertyEditorClass();
 		if (cls != null) {
 
 			try {
@@ -285,12 +388,11 @@ public class PropertyTableModel extends AbstractTableModel {
 		else {
 
 			// Look for a registered editor for this type.
-			Class type = getPropertyType(row);
-			if (type != null) {
-				editor = (PropertyEditor) m_prop_editors.get(type);
+			if (propertyType != null) {
+				editor = (PropertyEditor) m_prop_editors.get(propertyType);
 				if (editor == null) {
 					// Load a shared instance of the property editor.
-					editor = PropertyEditorManager.findEditor(type);
+					editor = PropertyEditorManager.findEditor(propertyType);
 					/**
 					 * The property editor manager will return default editors
 					 * for the Java primitives. Everything else is up to the
@@ -298,7 +400,7 @@ public class PropertyTableModel extends AbstractTableModel {
 					 */
 
 					if (editor != null)
-						m_prop_editors.put(type, editor);
+						m_prop_editors.put(propertyType, editor);
 				}
 
 				if (editor == null) {
@@ -306,8 +408,11 @@ public class PropertyTableModel extends AbstractTableModel {
 					editor = (PropertyEditor) m_prop_editors.get(Object.class);
 					if (editor == null) {
 						editor = PropertyEditorManager.findEditor(Object.class);
-						if (editor != null)
-							m_prop_editors.put(Object.class, editor);
+						if (editor != null){
+							// fix error for java.lang.InstantiationException: com.sun.beans.editors.EnumEditor
+							if(!"com.sun.beans.editors.EnumEditor".equals(editor.getClass().getName()))
+								m_prop_editors.put(Object.class, editor);
+						}
 					}
 
 				}
@@ -316,10 +421,13 @@ public class PropertyTableModel extends AbstractTableModel {
 					editor = m_unknown_editor;
 				}
 
-				// System.out.println( "PropertyEditorManager returned: " +
-				// editor +
-				// " for type: " + type );
 
+			}
+		}
+		if(editor != null){
+			if(editor instanceof JETAPropertyEditor){
+				((JETAPropertyEditor)editor).setCustom(isCustomProperties());
+				((JETAPropertyEditor)editor).setEnabled(getPropertyRW(row));
 			}
 		}
 		return editor;
@@ -353,7 +461,6 @@ public class PropertyTableModel extends AbstractTableModel {
 				try {
 					customizer = (Component) cls.newInstance();
 				} catch (Exception ex) {
-					// XXX - debug
 					System.out.println("PropertyTableModel: Instantiation exception creating Customizer");
 				}
 			}
@@ -366,51 +473,71 @@ public class PropertyTableModel extends AbstractTableModel {
 	 * Method which registers property editors for types.
 	 */
 	private static void registerPropertyEditors() {
-		PropertyEditorManager.registerEditor(Font.class, com.jeta.swingbuilder.gui.properties.editors.FontEditor.class);
-		PropertyEditorManager.registerEditor(Color.class, com.jeta.swingbuilder.gui.properties.editors.ColorEditor.class);
-		PropertyEditorManager.registerEditor(Boolean.class, com.jeta.swingbuilder.gui.properties.editors.BooleanEditor.class);
-		PropertyEditorManager.registerEditor(boolean.class, com.jeta.swingbuilder.gui.properties.editors.BooleanEditor.class);
-		PropertyEditorManager.registerEditor(String.class, com.jeta.swingbuilder.gui.properties.editors.StringEditor.class);
-		PropertyEditorManager.registerEditor(Dimension.class, com.jeta.swingbuilder.gui.properties.editors.DimensionEditor.class);
-		PropertyEditorManager.registerEditor(Icon.class, com.jeta.swingbuilder.gui.properties.editors.IconEditor.class);
+		PropertyEditorManager.registerEditor(Font.class, FontEditor.class);
+		PropertyEditorManager.registerEditor(Color.class, ColorEditor.class);
+		PropertyEditorManager.registerEditor(Boolean.class, BooleanEditor.class);
+		PropertyEditorManager.registerEditor(boolean.class, BooleanEditor.class);
+		PropertyEditorManager.registerEditor(String.class, StringEditor.class);
+		PropertyEditorManager.registerEditor(Dimension.class, DimensionEditor.class);
+		PropertyEditorManager.registerEditor(Icon.class, IconEditor.class);
 
-		PropertyEditorManager.registerEditor(byte.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.ByteEditor.class);
+		PropertyEditorManager.registerEditor(byte.class, NumericEditor.ByteEditor.class);
 
-		PropertyEditorManager.registerEditor(short.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.ShortEditor.class);
-		PropertyEditorManager.registerEditor(Short.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.ShortEditor.class);
+		PropertyEditorManager.registerEditor(short.class, NumericEditor.ShortEditor.class);
+		PropertyEditorManager.registerEditor(Short.class, NumericEditor.ShortEditor.class);
 
-		PropertyEditorManager.registerEditor(int.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.IntegerEditor.class);
-		PropertyEditorManager.registerEditor(Integer.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.IntegerEditor.class);
+		PropertyEditorManager.registerEditor(int.class, NumericEditor.IntegerEditor.class);
+		PropertyEditorManager.registerEditor(Integer.class, NumericEditor.IntegerEditor.class);
 
-		PropertyEditorManager.registerEditor(long.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.LongEditor.class);
-		PropertyEditorManager.registerEditor(Long.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.LongEditor.class);
+		PropertyEditorManager.registerEditor(long.class, NumericEditor.LongEditor.class);
+		PropertyEditorManager.registerEditor(Long.class, NumericEditor.LongEditor.class);
 
-		PropertyEditorManager.registerEditor(float.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.FloatEditor.class);
-		PropertyEditorManager.registerEditor(Float.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.FloatEditor.class);
+		PropertyEditorManager.registerEditor(float.class, NumericEditor.FloatEditor.class);
+		PropertyEditorManager.registerEditor(Float.class, NumericEditor.FloatEditor.class);
 
-		PropertyEditorManager.registerEditor(double.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.DoubleEditor.class);
-		PropertyEditorManager.registerEditor(Double.class, com.jeta.swingbuilder.gui.properties.editors.NumericEditor.DoubleEditor.class);
+		PropertyEditorManager.registerEditor(double.class, NumericEditor.DoubleEditor.class);
+		PropertyEditorManager.registerEditor(Double.class, NumericEditor.DoubleEditor.class);
 
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.ButtonGroupProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.ButtonGroupEditor.class);
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.ItemsProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.ItemsEditor.class);
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.TransformOptionsProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.ComboEditor.class);
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.CompoundBorderProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.BorderEditor.class);
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.CompoundLineProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.LineEditor.class);
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.effects.PaintProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.FillEditor.class);
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.ScrollBarsProperty.class,
-				com.jeta.swingbuilder.gui.properties.editors.ScrollBarsEditor.class);
+		PropertyEditorManager.registerEditor(ButtonGroupProperty.class, ButtonGroupEditor.class);
+		PropertyEditorManager.registerEditor(ItemsProperty.class, ItemsEditor.class);
+		PropertyEditorManager.registerEditor(TransformOptionsProperty.class, ComboEditor.class);
+		PropertyEditorManager.registerEditor(CompoundBorderProperty.class, BorderEditor.class);
+		PropertyEditorManager.registerEditor(CompoundLineProperty.class, LineEditor.class);
+		PropertyEditorManager.registerEditor(PaintProperty.class, FillEditor.class);
+		PropertyEditorManager.registerEditor(ScrollBarsProperty.class, ScrollBarsEditor.class);
+		PropertyEditorManager.registerEditor(TabbedPaneProperties.class, TabbedPaneEditor.class);
 
-		PropertyEditorManager.registerEditor(com.jeta.forms.store.properties.TabbedPaneProperties.class,
-				com.jeta.swingbuilder.gui.properties.editors.TabbedPaneEditor.class);
+		PropertyEditorManager.registerEditor(IntegerProperty.class,NumericEditor.IntegerEditor.class);
+		PropertyEditorManager.registerEditor(FloatProperty.class,NumericEditor.FloatEditor.class);
+		PropertyEditorManager.registerEditor(LongProperty.class,NumericEditor.LongEditor.class);
+		PropertyEditorManager.registerEditor(DoubleProperty.class,NumericEditor.DoubleEditor.class);
+		PropertyEditorManager.registerEditor(BooleanProperty.class,BooleanEditor.class);
+		PropertyEditorManager.registerEditor(StringProperty.class,StringEditor.class);
+		
+		PropertyEditorManager.registerEditor(ColorProperty.class,ColorEditor.class);
+		PropertyEditorManager.registerEditor(ColorProperty2.class,ColorEditor.class);
+		PropertyEditorManager.registerEditor(FontProperty.class,FontEditor.class);
+		PropertyEditorManager.registerEditor(FontProperty2.class,FontEditor.class);
+
+		PropertyEditorManager.registerEditor(StringListProperty.class, ComboEditor.class);
+		PropertyEditorManager.registerEditor(OptionListProperty.class, ComboEditor.class);
 
 	}
-
+	public static void registerPropertyEditors(Class propClass,Class editorClass) {
+		PropertyEditorManager.registerEditor(propClass, editorClass);
+	}
+	/**
+	 * Method which registers property editors for types.
+	 */
+	public static void registerCustomPropertyEditors(String beanID,String prop,Class editorClass) {
+		String peid = prop+"@"+beanID;
+		m_custom_prop_editors.put(peid, editorClass);
+	}
+	public static void registerCustomPropertyEditors(String prop,Class propClass,Class editorClass) {
+		String peid = prop+"#"+propClass.getName();
+		m_custom_prop_editors.put(peid, editorClass);
+	}
+	
 	/**
 	 * Set the table model to represents the properties of the object.
 	 */
@@ -421,6 +548,14 @@ public class PropertyTableModel extends AbstractTableModel {
 		}
 
 		m_bean = bean;
+		m_customProperties = null;
+		if (m_bean != null){
+			BeanManager bm = (BeanManager) JETARegistry.lookup(BeanManager.COMPONENT_ID);
+			RegisteredBean rbean = bm.getRegisteredBean(m_bean.getBeanID());
+			if(rbean != null){
+				m_customProperties = rbean.getCustomProperties();
+			}
+		}
 
 		if (m_bean == null || m_bean.getDelegate() == null) {
 			if (m_descriptors != null && m_descriptors.length > 0) {
@@ -453,6 +588,19 @@ public class PropertyTableModel extends AbstractTableModel {
 
 		try {
 			Object old_value = getValueAt(row, column);
+			if(!(value instanceof JETAProperty) && (old_value instanceof JETAProperty)){
+				if(old_value instanceof BooleanProperty) old_value = ((BooleanProperty)old_value).getValue();
+				else if(old_value instanceof ColorProperty) old_value = ((ColorProperty)old_value).getColor();
+				else if(old_value instanceof ColorProperty2) old_value = ((ColorProperty2)old_value).getValue();
+				else if(old_value instanceof DoubleProperty) old_value = ((DoubleProperty)old_value).getValue();
+				else if(old_value instanceof FloatProperty) old_value = ((FloatProperty)old_value).getValue();
+				else if(old_value instanceof FontProperty2) old_value = ((FontProperty2)old_value).getValue();
+				else if(old_value instanceof IntegerProperty) old_value = ((IntegerProperty)old_value).getValue();
+				else if(old_value instanceof LongProperty) old_value = ((LongProperty)old_value).getValue();
+				else if(old_value instanceof StringProperty) old_value = ((StringProperty)old_value).getValue();
+				else if(old_value instanceof StringListProperty) old_value = ((StringListProperty)old_value).getValue();
+				else if(old_value instanceof OptionListProperty) old_value = ((OptionListProperty)old_value).getValue();
+			}
 
 			if (old_value == null && value == null)
 				return;
@@ -466,9 +614,7 @@ public class PropertyTableModel extends AbstractTableModel {
 			if (old_value != null && old_value.equals(value))
 				return;
 
-			// System.out.println( "setValueAt new_value: " + value + " " +
-			// value.hashCode() + " old_value: " + old_value + " " +
-			// old_value.hashCode() );
+			//System.out.println( "setValueAt new_value: " + value + " " +value.hashCode() + " old_value: " + old_value + " " +old_value.hashCode() +" ::" + value.getClass().getName());
 
 			JETAPropertyDescriptor dpd = getPropertyDescriptor(row);
 			SetPropertyCommand cmd = new SetPropertyCommand(dpd, m_bean, value, old_value, FormComponent.getParentForm(m_bean));
@@ -478,6 +624,45 @@ public class PropertyTableModel extends AbstractTableModel {
 		} catch (Exception e) {
 			FormsLogger.severe(e);
 		}
+	}
+	public boolean isCustomProperties() {
+		return (m_customProperties != null);
+	}
+	
+	public boolean getPropertyRW(int row) {
+		boolean rw = true;
+		if(m_customProperties != null){
+			String key = m_descriptors[row].getName();
+			if(m_customProperties.containsKey(key)){
+				String value = m_customProperties.getProperty(key);
+				rw = "rw".equals(value);
+				if(rw) return rw;
+			}
+		}
+		if(rw){
+			JETAPropertyDescriptor pd = getPropertyDescriptor(row);
+			JETAPropertyDescriptor dpd = (JETAPropertyDescriptor) pd;
+			rw = dpd.isWritable();
+			// rw = ( pd.getWriteMethod() == null) ? false : true;
+			if(rw){
+				Class propertyType = getPropertyTypeEx(row);
+				String peid = m_descriptors[row].getName()+"@"+m_bean.getBeanID();
+				if(!m_custom_prop_editors.containsKey(peid)){
+					if(propertyType != null){
+						peid = m_descriptors[row].getName()+"#"+propertyType.getName();
+						if(!m_custom_prop_editors.containsKey(peid)){
+							PropertyEditor editor = (PropertyEditor) m_prop_editors.get(propertyType);
+							if (editor == null)
+								rw = false;
+						}
+					
+					}
+				}
+				
+			}
+
+		}
+		return rw;
 	}
 
 }

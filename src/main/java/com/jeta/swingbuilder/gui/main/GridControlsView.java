@@ -21,9 +21,9 @@ package com.jeta.swingbuilder.gui.main;
 import javax.swing.BorderFactory;
 
 import com.jeta.forms.components.panel.FormPanel;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
 import com.jeta.open.gui.framework.JETAPanel;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Displays the column and row settings.

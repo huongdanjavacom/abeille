@@ -32,13 +32,13 @@ import com.jeta.forms.store.properties.effects.PaintProperty;
 import com.jeta.forms.store.properties.effects.RadialGradientProperty;
 import com.jeta.forms.store.properties.effects.SolidProperty;
 import com.jeta.forms.store.properties.effects.TextureProperty;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.gui.framework.JETAController;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.rules.JETARule;
 import com.jeta.open.rules.RuleResult;
 import com.jeta.swingbuilder.gui.images.ImagePropertiesValidator;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Displays the fill effects view. Currently we support solid, gradient, and

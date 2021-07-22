@@ -54,6 +54,7 @@ public class FileChooserConfig {
 	 * The directory to open in the file chooser.
 	 */
 	private String m_initial_directory;
+	private String m_initial_file;
 
 	private Component m_parent = null;
 
@@ -151,5 +152,15 @@ public class FileChooserConfig {
 
 	public void setParentComponent(Component comp) {
 		m_parent = comp;
+	}
+
+	
+	public void setInitialFile(String file) {
+		this.m_initial_file = file;
+	}
+
+	
+	public String getInitialFile() {
+		return m_initial_file;
 	}
 }

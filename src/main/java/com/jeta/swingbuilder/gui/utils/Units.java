@@ -29,7 +29,7 @@ import java.util.Map;
 
 import javax.swing.UIManager;
 
-import com.jgoodies.forms.util.AbstractUnitConverter;
+import com.jeta.jgoodies.forms.util.AbstractUnitConverter;
 
 /**
  */

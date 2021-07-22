@@ -21,7 +21,9 @@ package com.jeta.swingbuilder.codegen.builder.properties;
 import java.lang.reflect.Method;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.forms.store.properties.StringListProperty;
+import com.jeta.forms.store.properties.StringProperty;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
 import com.jeta.swingbuilder.codegen.builder.PropertyWriter;
@@ -32,13 +34,27 @@ public class StringPropertyBuilder implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			if (value instanceof String) {
 				Method write = pd.getWriteMethod();
 				if (write != null) {
 					MethodStatement ms = new MethodStatement(writer.getBeanVariable(), write.getName());
 					ms.addParameter(StringExpression.quoteString((String) value));
+					writer.addStatement(ms);
+				}
+			}else if(value instanceof StringProperty){
+				Method write = pd.getWriteMethod();
+				if (write != null) {
+					MethodStatement ms = new MethodStatement(writer.getBeanVariable(), write.getName());
+					ms.addParameter(StringExpression.quoteString(((StringProperty) value).getValue()));
+					writer.addStatement(ms);
+				}
+			}else if(value instanceof StringListProperty){
+				Method write = pd.getWriteMethod();
+				if (write != null) {
+					MethodStatement ms = new MethodStatement(writer.getBeanVariable(), write.getName());
+					ms.addParameter(StringExpression.quoteString(((StringListProperty) value).getValue()));
 					writer.addStatement(ms);
 				}
 			}

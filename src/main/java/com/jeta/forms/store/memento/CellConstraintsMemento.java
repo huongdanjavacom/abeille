@@ -36,7 +36,7 @@ import com.jeta.forms.gui.common.FormUtils;
 import com.jeta.forms.store.AbstractJETAPersistable;
 import com.jeta.forms.store.JETAObjectInput;
 import com.jeta.forms.store.JETAObjectOutput;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Memento for serializing the state of a CellConstraints object.

@@ -25,9 +25,9 @@ import com.jeta.forms.gui.components.EmptyComponentFactory;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.StandardComponent;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.formmgr.AbstractFormManager;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Command that deletes a component from a view

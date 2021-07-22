@@ -77,6 +77,7 @@ public class DefaultComponentFinder implements ComponentFinder, ContainerListene
 	protected void buildNames(Container container) {
 		if (container != null) {
 			if (container instanceof JMenu) {
+				registerComponent(container);
 				buildNames(((JMenu) container).getPopupMenu());
 			}
 			else {

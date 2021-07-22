@@ -24,7 +24,11 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 
+import com.jeta.forms.store.properties.FontProperty;
+import com.jeta.forms.store.properties.FontProperty2;
+import com.jeta.forms.store.properties.StringProperty;
 import com.jeta.open.gui.framework.JETADialog;
 import com.jeta.open.gui.utils.JETAToolbox;
 import com.jeta.open.i18n.I18N;
@@ -67,7 +71,17 @@ public class FontEditor extends JETAPropertyEditor {
 	 * Invokes a dialog used to update the property
 	 */
 	public void invokePropertyDialog(Component comp) {
-		FontView view = new FontView((Font) getValue());
+		Object value = getValue();
+		Font font = null;
+		if(value instanceof FontProperty){
+			font = ((FontProperty)value).getFont();
+		}else if(value instanceof FontProperty2){
+			font = ((FontProperty2)value).getValue();
+		}else{
+			font = (Font) value;
+		}
+
+		FontView view = new FontView(font);
 		JETADialog dlg = (JETADialog) JETAToolbox.createDialog(JETADialog.class, comp, true);
 		dlg.setPrimaryPanel(view);
 		dlg.setTitle(I18N.getLocalizedMessage("Font"));
@@ -91,6 +105,9 @@ public class FontEditor extends JETAPropertyEditor {
 
 	public void paintValue(Graphics g, Rectangle rect) {
 		assert (rect != null);
+		if(isCustom() && !isEnabled() ){
+			g.setColor(UIManager.getColor("Label.disabledForeground"));
+		}
 		m_painter.paintValue(g, rect);
 	}
 
@@ -99,7 +116,14 @@ public class FontEditor extends JETAPropertyEditor {
 	 */
 	public void setValue(Object value) {
 		super.setValue(value);
-		Font font = (Font) value;
+		Font font = null;
+		if(value instanceof FontProperty){
+			font = ((FontProperty)value).getFont();
+		}else if(value instanceof FontProperty2){
+			font = ((FontProperty2)value).getValue();
+		}else{
+			font = (Font) value;
+		}
 
 		if (font == null) {
 			m_painter.setValue(I18N.format("font_description_2", "null", ""));

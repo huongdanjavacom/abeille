@@ -67,6 +67,7 @@ public class PropertyValueRenderer extends JComponent implements TableCellRender
 	private Color m_selfg;
 	private Color m_bg;
 	private Color m_fg;
+	private Color m_bgdisabled;
 
 	/**
 	 * ctor
@@ -84,6 +85,12 @@ public class PropertyValueRenderer extends JComponent implements TableCellRender
 
 		Component result = this;
 		m_value = obj;
+		
+		if(m_model.isCustomProperties() && !m_model.getPropertyRW(row)){
+			m_bgdisabled = UIManager.getColor("Label.disabledForeground");
+		}else{
+			m_bgdisabled = null;
+		}
 
 		try {
 			m_editor = m_cache.getPropertyEditor(row);
@@ -133,6 +140,9 @@ public class PropertyValueRenderer extends JComponent implements TableCellRender
 				assert (fm != null);
 				int line_height = fm.getHeight();
 				int y = height - (height - line_height) / 2 - fm.getDescent();
+				if(m_bgdisabled != null){
+					g.setColor(m_bgdisabled);
+				}
 				if (m_value == null) {
 					g.drawString("null", 0, y);
 				}

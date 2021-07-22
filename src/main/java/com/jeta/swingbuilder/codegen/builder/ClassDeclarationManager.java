@@ -18,6 +18,7 @@
 
 package com.jeta.swingbuilder.codegen.builder;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,45 +26,63 @@ import java.util.TreeSet;
 
 import javax.swing.Icon;
 
+import com.jeta.forms.store.memento.FormCodeModel;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
-import com.jeta.swingbuilder.store.CodeModel;
 
 public class ClassDeclarationManager implements DeclarationManager {
-	private DeclarationHelper m_member_decls;
+	protected DeclarationHelper m_member_decls;
 
-	private DeclarationHelper m_method_decls = new DeclarationHelper(null);
+	protected DeclarationHelper m_method_decls = new DeclarationHelper(null);
 
 	/**
 	 * A set of import statements for this class (without the import keyword)
 	 */
-	private TreeSet m_imports = new TreeSet();
+	protected TreeSet m_imports = new TreeSet();
 
 	/**
 	 * A list of MethodWriter objects
 	 */
-	private LinkedList m_methods = new LinkedList();
+	protected LinkedList m_methods = new LinkedList();
 
 	/**
 	 * A list of member variables
 	 */
-	private LinkedList m_fields = new LinkedList();
+	protected LinkedList m_fields = new LinkedList();
 
-	private String m_class_name;
+	protected String m_class_name;
 
-	private String m_package;
+	protected String m_package;
 
-	private HashMap m_user_objects = new HashMap();
+	protected HashMap m_user_objects = new HashMap();
 
-	private CodeModel m_code_model;
+	protected FormCodeModel m_code_model;
+	
+	protected String m_class_extends = "JPanel";
+	protected String m_class_implements = null;
 
-	public ClassDeclarationManager(CodeModel cgenmodel) {
+	public ClassDeclarationManager(FormCodeModel cgenmodel) {
+		this(cgenmodel,"JPanel");
+	}
+	public ClassDeclarationManager(FormCodeModel cgenmodel,String class_extends) {
+		this(cgenmodel,"JPanel",null);
+	}
+	
+	public ClassDeclarationManager(FormCodeModel cgenmodel,String class_extends,String class_implements) {
 		m_code_model = cgenmodel;
 		m_class_name = cgenmodel.getClassName();
+		if(m_class_name.lastIndexOf(".") != -1)
+			m_package = FormDesignerUtils.fastTrim(m_class_name.substring(0, m_class_name.lastIndexOf(".")));
+		else
+			m_package = "";
 		m_member_decls = new DeclarationHelper(cgenmodel.getMemberPrefix());
+		m_class_extends = class_extends.trim();
+		m_class_implements  = class_implements.trim();
 	}
 
 	public void addImport(String importDef) {
-		if (importDef != null && importDef.indexOf(".") >= 0) {
+		if (importDef != null && 
+			importDef.indexOf(".") >= 0 && 
+			!importDef.startsWith("java.lang.")) {
 			m_imports.add(importDef);
 		}
 	}
@@ -104,7 +123,12 @@ public class ClassDeclarationManager implements DeclarationManager {
 
 		builder.print("public class ");
 		builder.print(getClassName());
-		builder.print(" extends JPanel");
+		builder.print(" extends ");
+		builder.print(m_class_extends);
+		if(m_class_implements != null && m_class_implements.length() > 0){
+			builder.print("\n\t implements ");
+			builder.print(m_class_implements);
+		}
 
 		builder.openBrace();
 		builder.println();
@@ -113,7 +137,18 @@ public class ClassDeclarationManager implements DeclarationManager {
 		iter = m_fields.iterator();
 		while (iter.hasNext()) {
 			Statement stmt = (Statement) iter.next();
-			stmt.output(builder);
+			if(((VariableDeclaration)stmt).isStatic()){
+				stmt.output(builder);
+			}
+		}
+		builder.println();
+
+		iter = m_fields.iterator();
+		while (iter.hasNext()) {
+			Statement stmt = (Statement) iter.next();
+			if(!((VariableDeclaration)stmt).isStatic()){
+				stmt.output(builder);
+			}
 		}
 
 		iter = m_methods.iterator();
@@ -167,9 +202,6 @@ public class ClassDeclarationManager implements DeclarationManager {
 		return m_code_model.isIncludeNonStandard();
 	}
 
-	public void setPackage(String pkg) {
-		m_package = FormDesignerUtils.fastTrim(pkg);
-	}
 
 	public Object get(String name) {
 		return m_user_objects.get(name);
@@ -177,6 +209,16 @@ public class ClassDeclarationManager implements DeclarationManager {
 
 	public void put(String name, Object obj) {
 		m_user_objects.put(name, obj);
+	}
+	
+	public Collection getFields(){
+		return m_fields;
+	}
+	public void setClassExtends(String class_extends) {
+		this.m_class_extends = class_extends;
+	}
+	public void setClassImplements(String class_implements) {
+		this.m_class_implements = class_implements;
 	}
 
 }

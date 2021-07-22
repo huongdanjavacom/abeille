@@ -29,6 +29,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
+import com.jeta.forms.store.properties.StringProperty;
 import com.jeta.open.gui.framework.JETADialog;
 import com.jeta.open.gui.utils.JETAToolbox;
 import com.jeta.open.i18n.I18N;
@@ -68,6 +69,7 @@ public class StringEditor extends JETAPropertyEditor {
 	}
 
 	public Component getCustomEditor() {
+		if(isCustom()) m_field.setEnabled(isEnabled());
 		return m_panel;
 	}
 
@@ -105,9 +107,18 @@ public class StringEditor extends JETAPropertyEditor {
 	}
 
 	public void setValue(Object value) {
-		super.setValue(value);
-		if (value != null) {
-			m_field.setText(value.toString());
+		if (value == null) {
+			super.setValue(value);
+			return;
+		}
+		Object rvalue = value;
+		if(value instanceof StringProperty){
+			rvalue = ((StringProperty)value).getValue();
+		}
+		
+		super.setValue(rvalue);
+		if (rvalue != null) {
+			m_field.setText(rvalue.toString());
 		}
 	}
 

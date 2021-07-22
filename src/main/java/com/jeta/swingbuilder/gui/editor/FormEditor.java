@@ -43,6 +43,10 @@ import com.jeta.forms.gui.form.GridOverlay;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.form.GridViewEvent;
 import com.jeta.forms.gui.form.GridViewListener;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.i18n.I18N;
 import com.jeta.open.registry.JETARegistry;
@@ -57,10 +61,6 @@ import com.jeta.swingbuilder.gui.project.UserPreferencesNames;
 import com.jeta.swingbuilder.gui.undo.EditorUndoManager;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 import com.jeta.swingbuilder.interfaces.userprops.TSUserPropertiesUtils;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * Displays a form and an editor grid.
@@ -180,6 +180,20 @@ public class FormEditor extends JETAPanel implements GridViewListener {
 
 			LinkedFormComponentFactory factory = new LinkedFormComponentFactory(m_compsrc);
 			m_form = (DesignFormComponent) factory.create(m_compsrc, "", null, cols, rows, false);
+
+			m_gridview = m_form.getChildView();
+			GridView.fillCells(m_gridview, m_compsrc);
+			initialize(createTopParent(m_form));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public FormEditor(ComponentSource compsrc, String colspec, String rowspec) {
+		try {
+			m_compsrc = compsrc;
+
+			LinkedFormComponentFactory factory = new LinkedFormComponentFactory(m_compsrc);
+			m_form = (DesignFormComponent) factory.create(m_compsrc, "", null, colspec, rowspec, false);
 
 			m_gridview = m_form.getChildView();
 			GridView.fillCells(m_gridview, m_compsrc);

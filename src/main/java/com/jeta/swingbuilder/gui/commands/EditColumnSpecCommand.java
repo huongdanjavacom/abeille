@@ -21,7 +21,7 @@ package com.jeta.swingbuilder.gui.commands;
 import javax.swing.undo.CannotRedoException;
 
 import com.jeta.forms.gui.form.FormComponent;
-import com.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
 
 public class EditColumnSpecCommand extends FormUndoableEdit {
 	/**

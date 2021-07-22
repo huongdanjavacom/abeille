@@ -24,8 +24,9 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -34,30 +35,26 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.jeta.forms.beanmgr.BeanManager;
-import com.jeta.forms.components.line.HorizontalLineComponent;
 import com.jeta.forms.gui.components.ComponentFactory;
 import com.jeta.forms.gui.components.ComponentSource;
 import com.jeta.forms.logger.FormsLogger;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.gui.framework.JETAController;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.i18n.I18N;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.open.support.EmptyCollection;
-import com.jeta.swingbuilder.gui.beanmgr.DefaultBeanManager;
-import com.jeta.swingbuilder.gui.components.EmbeddedFormComponentFactory;
-import com.jeta.swingbuilder.gui.components.GenericComponentFactory;
-import com.jeta.swingbuilder.gui.components.LinkedFormComponentFactory;
-import com.jeta.swingbuilder.gui.components.SwingComponentFactory;
+import com.jeta.swingbuilder.gui.components.TSButtonBar;
+import com.jeta.swingbuilder.gui.componentstoolbar.ComponentsToolBarManager;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 import com.jeta.swingbuilder.resources.Icons;
 import com.jeta.swingbuilder.store.RegisteredBean;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * The frame used to contain the toolbar for editing forms.
@@ -65,38 +62,28 @@ import com.jgoodies.forms.layout.RowSpec;
  * @author Jeff Tassin
  */
 public class ComponentsToolBar extends JETAPanel implements ComponentSource {
-	public static final int MAX_TOOLBAR_ROWS = 20;
-
-	public static final String ID_SELECTION_TOOL = "selection.tool";
-	public static final String ID_EMBEDDED_FORM_COMPONENT = "embedded.form.tool";
-	public static final String ID_LINKED_FORM_COMPONENT = "linked.form.tool";
-	public static final String ID_GENERIC_COMPONENT = "generic.component";
-	public static final String ID_TEST_COMPONENT = "com.jeta.swingbuilder.gui.components.TestBeanFactory";
-
-	/** the selected tool */
-	private String m_current_tool = ID_SELECTION_TOOL;
-
+	public static final int MAX_TOOLBAR_ROWS = 120;
 	/**
-	 * Factories for creating components
-	 */
-	private HashMap m_factories = new HashMap();
+	 * for toolbar catalog 
+	 */ 
+	private TSButtonBar m_buttonbar;
 
 	/** @param model */
 	public ComponentsToolBar() {
 		try {
-			FormLayout layout = new FormLayout("pref", "fill:pref:grow");
-			setLayout(layout);
-			CellConstraints cc = new CellConstraints();
-			add(createToolbar(), cc.xy(1, 1));
+			setLayout(new BorderLayout());
+			m_buttonbar = new TSButtonBar(true);
+			reload();
+			add(m_buttonbar, BorderLayout.CENTER);
 		} catch (Exception e) {
 			FormsLogger.debug(e);
 		}
 	}
 
 	/** Creates a button for our toolbar */
-	private Component createPaletteButton(Icon icon, String cmd, String tooltip) {
+	private Component createPaletteButton(Icon icon, String id,String text) {
 		AbstractButton btn = new javax.swing.JToggleButton();
-		Dimension d = new Dimension(20, 20);
+		Dimension d = new Dimension(120, 20);
 		btn.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				AbstractButton src = (AbstractButton) e.getSource();
@@ -111,7 +98,15 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 				}
 			}
 		});
-
+		// 按esc取消选择控件
+		btn.addKeyListener(new KeyAdapter() {
+			
+			public void keyPressed(KeyEvent e) {
+				if(KeyEvent.VK_ESCAPE == e.getKeyCode() && e.getSource() != getComponentByName(ComponentsToolBarManager.ID_SELECTION_TOOL)) {
+					setSelectionTool();
+				}
+			}
+		});
 		btn.setOpaque(false);
 		btn.setContentAreaFilled(false);
 		btn.setFocusPainted(false);
@@ -120,10 +115,12 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 		btn.setSize(d);
 		btn.setBorderPainted(false);
 		btn.setIcon(icon);
-		btn.setActionCommand(cmd);
-		btn.setName(cmd);
-		if (tooltip != null)
-			btn.setToolTipText(tooltip);
+		btn.setActionCommand(id);
+		btn.setName(id);
+		btn.setText(text);
+		btn.setHorizontalAlignment(AbstractButton.LEFT);
+		if (text != null)
+			btn.setToolTipText(text);
 		return btn;
 	}
 
@@ -131,11 +128,10 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 	 * Creates the java beans palette toolbar.
 	 * 
 	 */
-	private Container createToolbar() {
+	private Container createToolbar(String cat) {
 
 		LinkedList button_list = new LinkedList();
-		button_list.addAll(registerDefaultBeans());
-		button_list.addAll(registerImportedBeans());
+		button_list.addAll(registerBeans(cat));
 
 		StringBuffer colspec = new StringBuffer();
 		StringBuffer rowspec = new StringBuffer();
@@ -190,38 +186,34 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 
 	/** ComponentSource imlementation */
 	public ComponentFactory getComponentFactory() {
-		if (!isSelectionTool()) {
-			String toolname = getCurrentTool();
-			return (ComponentFactory) m_factories.get(toolname);
+		ComponentsToolBarManager tbm = (ComponentsToolBarManager) JETARegistry.lookup(ComponentsToolBarManager.COMPONENT_ID);
+		if (tbm != null && !tbm.isSelectionTool()){
+			return tbm.getComponentFactory();
 		}
 		return null;
 	}
 
-	/** @return the classname of the currently selected tool in the tool palette. */
-	public String getCurrentTool() {
-		return m_current_tool;
-	}
-
 	/** ComponentSource imlementation */
 	public boolean isSelectionTool() {
-		return (m_current_tool == ID_SELECTION_TOOL);
+		ComponentsToolBarManager tbm = (ComponentsToolBarManager) JETARegistry.lookup(ComponentsToolBarManager.COMPONENT_ID);
+		if (tbm != null){
+			return tbm.isSelectionTool();
+		}
+		return true;
 	}
 
 	/**
 	 * Registers all default bean factories
 	 */
-	private Collection registerDefaultBeans() {
+	private Collection registerBeans(String cat) {
 		try {
 			LinkedList btns = new LinkedList();
-
-			btns.add(registerBean(ID_SELECTION_TOOL, I18N.getLocalizedMessage("Selection Tool"), null, Icons.MOUSE_16));
-
-			DefaultBeanManager bm = (DefaultBeanManager) JETARegistry.lookup(DefaultBeanManager.COMPONENT_ID);
-			if (bm == null)
+			ComponentsToolBarManager tbm = (ComponentsToolBarManager) JETARegistry.lookup(ComponentsToolBarManager.COMPONENT_ID);
+			if (tbm == null)
 				return btns;
 
 			boolean add_forms = true;
-			Collection default_beans = bm.getDefaultBeans();
+			Collection default_beans = tbm.getBeans(cat);
 			Iterator iter = default_beans.iterator();
 			while (iter.hasNext()) {
 				RegisteredBean rbean = (RegisteredBean) iter.next();
@@ -229,32 +221,7 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 				if (icon == null) {
 					icon = FormDesignerUtils.loadImage(Icons.BEAN_16);
 				}
-
-				String bname = rbean.getClassName();
-				try {
-
-					/**
-					 * insert the form beans just before the horizontal line
-					 * component - legacy reasons
-					 */
-					if (HorizontalLineComponent.class.getName().equals(bname) && add_forms) {
-						btns.add(registerBean(ID_EMBEDDED_FORM_COMPONENT, I18N.getLocalizedMessage("Embedded Form"), new EmbeddedFormComponentFactory(this),
-								Icons.EMBEDDED_FORM_16));
-
-						btns.add(registerBean(ID_LINKED_FORM_COMPONENT, I18N.getLocalizedMessage("LinkedForm"), new LinkedFormComponentFactory(this),
-								Icons.LINKED_FORM_16));
-
-						btns.add(registerBean(ID_GENERIC_COMPONENT, I18N.getLocalizedMessage("Generic Component"), new GenericComponentFactory(this),
-								Icons.GENERIC_COMPONENT_16));
-
-						add_forms = false;
-					}
-
-					Class bean_class = bm.getBeanClass(bname);
-					btns.add(registerBean(bname, rbean.getDescription(), new SwingComponentFactory(this, bname), icon));
-				} catch (Exception e) {
-					FormsLogger.debug(e);
-				}
+				btns.add(createPaletteButton(icon, rbean.getId(), rbean.getDescription()));
 			}
 			return btns;
 		} catch (Exception e) {
@@ -262,71 +229,31 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 		}
 		return EmptyCollection.getInstance();
 
-	}
-
-	/**
-	 * Registers all imported java beans
-	 */
-	private Collection registerImportedBeans() {
-		try {
-			LinkedList btns = new LinkedList();
-			BeanManager bm = (BeanManager) JETARegistry.lookup(DefaultBeanManager.COMPONENT_ID);
-			if (bm == null)
-				return btns;
-
-			Collection imported_beans = bm.getImportedBeans();
-			Iterator iter = imported_beans.iterator();
-			while (iter.hasNext()) {
-				RegisteredBean rbean = (RegisteredBean) iter.next();
-				Icon icon = rbean.getIcon();
-				if (icon == null) {
-					icon = FormDesignerUtils.loadImage(Icons.BEAN_16);
-				}
-
-				String bname = rbean.getClassName();
-				try {
-					Class bean_class = bm.getBeanClass(bname);
-					btns.add(registerBean(bname, rbean.getDescription(), new SwingComponentFactory(this, bname), icon));
-				} catch (Exception e) {
-					FormsLogger.debug(e);
-				}
-			}
-			return btns;
-		} catch (Exception e) {
-			FormsLogger.debug(e);
-		}
-		return EmptyCollection.getInstance();
-	}
-
-	/**
-	 * Registers a Java bean for this toolbar
-	 */
-	public Component registerBean(String toolName, String tooltip, ComponentFactory factory, String imageName) {
-		return registerBean(toolName, tooltip, factory, FormDesignerUtils.loadImage(imageName));
-	}
-
-	/**
-	 * Registers a Java bean for this toolbar
-	 */
-	public Component registerBean(String toolName, String tooltip, ComponentFactory factory, Icon icon) {
-		if (factory != null) {
-			if (m_factories.get(toolName) != null) {
-				System.out.println("ComponentsToolbar.registerBean:  factory registered twice: " + toolName);
-			}
-			m_factories.put(toolName, factory);
-		}
-		return createPaletteButton(icon, toolName, tooltip);
 	}
 
 	/**
 	 * Reloads the toolbar
 	 */
 	public void reload() {
-		m_factories.clear();
-		removeAll();
-		CellConstraints cc = new CellConstraints();
-		add(createToolbar(), cc.xy(1, 1));
-		revalidate();
+		m_buttonbar.clear();
+		ComponentsToolBarManager tbm = (ComponentsToolBarManager) JETARegistry.lookup(ComponentsToolBarManager.COMPONENT_ID);
+		if (tbm != null){
+			Collection cats = tbm.getCatalogs();
+			Iterator iter = cats.iterator();
+			while (iter.hasNext()) {
+				String cat = (String) iter.next();
+				JScrollPane scroll = new JScrollPane();
+				scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+				scroll.setViewportView(createToolbar(cat));
+				m_buttonbar.addView(I18N.getLocalizedMessage(cat), scroll, FormDesignerUtils.loadImage(Icons.BEAN_16));
+			}
+		}
+		m_buttonbar.updateView();
+	}
+	public void clear() {
+		m_buttonbar.clear();
+		m_buttonbar.updateView();
+		
 	}
 
 	/**
@@ -334,9 +261,10 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 	 * selection tool
 	 */
 	public void setSelectionTool() {
-		AbstractButton btn = (AbstractButton) getComponentByName(ID_SELECTION_TOOL);
+		AbstractButton btn = (AbstractButton) getComponentByName(ComponentsToolBarManager.ID_SELECTION_TOOL);
 		btn.setSelected(true);
-		m_current_tool = ID_SELECTION_TOOL;
+		ComponentsToolBarManager tbm = (ComponentsToolBarManager) JETARegistry.lookup(ComponentsToolBarManager.COMPONENT_ID);
+		if (tbm != null) tbm.setSelectionTool();
 	}
 
 	/** The controller for this frame */
@@ -363,7 +291,8 @@ public class ComponentsToolBar extends JETAPanel implements ComponentSource {
 		}
 
 		public void actionPerformed(ActionEvent evt) {
-			m_current_tool = m_compname;
+			ComponentsToolBarManager tbm = (ComponentsToolBarManager) JETARegistry.lookup(ComponentsToolBarManager.COMPONENT_ID);
+			if (tbm != null) tbm.setSelectionId(m_compname);
 		}
 	}
 

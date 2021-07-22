@@ -29,6 +29,8 @@ import com.jeta.forms.gui.common.FormUtils;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.formmgr.FormManager;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.gui.framework.JETAController;
 import com.jeta.open.gui.framework.UIDirector;
 import com.jeta.open.registry.JETARegistry;
@@ -37,8 +39,6 @@ import com.jeta.swingbuilder.gui.commands.CommandUtils;
 import com.jeta.swingbuilder.gui.commands.EditColumnSpecCommand;
 import com.jeta.swingbuilder.gui.commands.EditRowSpecCommand;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * The controller for this panel
@@ -81,7 +81,9 @@ public class SpecViewController extends JETAController {
 		assignAction(SpecViewNames.ID_COMPONENT_SIZE_RADIO, new SpecChangeListener());
 		assignAction(SpecViewNames.ID_BOUNDED_SIZE_RADIO, new SpecChangeListener());
 		assignAction(SpecViewNames.ID_GROUP_APPLY_BTN, new GroupChangedAction());
-
+		
+		m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO, false);
+		
 		view.setUIDirector(new SpecViewUIDirector(m_view));
 	}
 
@@ -205,7 +207,7 @@ public class SpecViewController extends JETAController {
 		public void updateComponents(java.util.EventObject evt) {
 			if (m_view.isConstantSize()) {
 				m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_AMT_FIELD, true);
-				m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO, true);
+				m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO, false);//true);
 				m_view.enableComponent(SpecViewNames.ID_COMP_SIZE_COMBO, false);
 				m_view.enableComponent(SpecViewNames.ID_BOUNDED_MIN_RADIO, false);
 				m_view.enableComponent(SpecViewNames.ID_BOUNDED_MAX_RADIO, false);
@@ -220,7 +222,7 @@ public class SpecViewController extends JETAController {
 			}
 			else if (m_view.isBoundedSize()) {
 				m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_AMT_FIELD, true);
-				m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO, true);
+				m_view.enableComponent(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO, false);//true);
 				m_view.enableComponent(SpecViewNames.ID_COMP_SIZE_COMBO, true);
 				m_view.enableComponent(SpecViewNames.ID_BOUNDED_MIN_RADIO, true);
 				m_view.enableComponent(SpecViewNames.ID_BOUNDED_MAX_RADIO, true);

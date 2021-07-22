@@ -29,18 +29,37 @@
 
 package com.jeta.forms.gui.beans.factories;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
+import com.jeta.forms.components.ObjectConvert;
 import com.jeta.forms.gui.beans.BeanProperties;
 import com.jeta.forms.gui.beans.DynamicBeanInfo;
 import com.jeta.forms.gui.beans.JETABean;
 import com.jeta.forms.gui.common.FormException;
 import com.jeta.forms.logger.FormsLogger;
+import com.jeta.forms.store.properties.BooleanProperty;
+import com.jeta.forms.store.properties.ColorProperty2;
 import com.jeta.forms.store.properties.CompoundBorderProperty;
 import com.jeta.forms.store.properties.DefaultBorderProperty;
+import com.jeta.forms.store.properties.DoubleProperty;
+import com.jeta.forms.store.properties.FloatProperty;
+import com.jeta.forms.store.properties.FontProperty2;
+import com.jeta.forms.store.properties.IntegerProperty;
+import com.jeta.forms.store.properties.JETAProperty;
+import com.jeta.forms.store.properties.LongProperty;
+import com.jeta.forms.store.properties.OptionListProperty;
 import com.jeta.forms.store.properties.ScrollBarsProperty;
+import com.jeta.forms.store.properties.StringListProperty;
+import com.jeta.forms.store.properties.StringProperty;
+import com.jeta.swingbuilder.store.RegisteredBean;
 
 /**
  * Base class for Swing component bean factories. This factory includes support
@@ -72,6 +91,10 @@ public class JComponentBeanFactory implements BeanFactory {
 	 * when created on the form.
 	 */
 	private boolean m_scrollable = false;
+	/**
+	 * Properties
+	 */
+	private RegisteredBean m_bean = null;
 
 	/**
 	 * Creates a <code>JComponentBeanFactory</code> instance with the
@@ -83,6 +106,10 @@ public class JComponentBeanFactory implements BeanFactory {
 	 */
 	public JComponentBeanFactory(Class compClass) {
 		setBeanClass(compClass);
+	}
+	public JComponentBeanFactory(Class compClass,RegisteredBean bean) {
+		setBeanClass(compClass);
+		m_bean = bean;
 	}
 
 	/**
@@ -104,14 +131,19 @@ public class JComponentBeanFactory implements BeanFactory {
 	public JETABean createBean(String compName, boolean instantiateBean, boolean setDefaults) throws FormException {
 		Component comp = null;
 		if (instantiateBean) {
-			comp = (Component) instantiateBean();
+			comp = (Component) instantiateBean(setDefaults);
 			comp.setName(compName);
 		}
 
 		DynamicBeanInfo beaninfo = createBeanInfo(m_comp_class);
 		BeanProperties default_props = new BeanProperties(beaninfo);
 		defineProperties(default_props);
-		return new JETABean(comp, default_props);
+		JETABean jetaBean = new JETABean(comp, default_props);
+		if(m_bean != null)
+			jetaBean.setBeanID(m_bean.getId());
+		else
+			jetaBean.setBeanID(m_comp_class.getName());
+		return jetaBean;
 	}
 
 	/**
@@ -163,6 +195,70 @@ public class JComponentBeanFactory implements BeanFactory {
 
 		if (isScrollable())
 			props.register(new ScrollBarsProperty());
+		
+		if(m_bean == null) return;
+		Properties codes = m_bean.getCodeOnlyProperties();
+		if(codes == null) return ;
+		for(Object key:codes.keySet()){
+			String pkey = key.toString();
+			if(pkey.indexOf("@") == -1) continue;
+			String pType = pkey.substring(pkey.indexOf("@") + 1);
+			String value = codes.getProperty(pkey);
+			Class targetType = String.class;
+			JETAProperty prop1 = null;
+			if("Integer".equals(pType)){
+				targetType = Integer.class;
+				prop1 = new IntegerProperty(pkey);
+			}else if("Long".equals(pType)){
+				targetType = Long.class;
+				prop1 = new LongProperty(pkey);
+			}else if("Float".equals(pType)){
+				targetType = Float.class;
+				prop1 = new FloatProperty(pkey);
+			}else if("Double".equals(pType)){
+				targetType = Double.class;
+				prop1 = new DoubleProperty(pkey);
+			}else if("Boolean".equals(pType)){
+				targetType = Boolean.class;
+				prop1 = new BooleanProperty(pkey);
+			}else if("Color".equals(pType)){
+				targetType = Color.class;
+				prop1 = new ColorProperty2(pkey);
+			}else if("Font".equals(pType)){
+				targetType = Font.class;
+				prop1 = new FontProperty2(pkey);
+			}else if("String".equals(pType)){
+				targetType = String.class;
+				prop1 = new StringProperty(pkey);
+			}else if("List".equals(pType)){
+				targetType = String.class;
+				String[] values = value.split("\\|");
+				List<String> list = new ArrayList<String>();
+				for(int i=1;i<values.length;i++){
+					list.add(values[i]);
+				}
+				value = values[0];
+				prop1 = new StringListProperty(pkey,list);
+			}else if("Option".equals(pType)){
+				targetType = String.class;
+				String[] values = value.split("\\|");
+				int len = (values.length - 1)/2;
+				Object[][] options = new Object[len][2];
+				for(int i=0;i<len;i++){
+					options[i][0] = values[i*2 + 2];
+					options[i][1] = Integer.valueOf(values[i*2 + 1]);
+				}
+				value = values[0];
+				prop1 = new OptionListProperty(pkey,options);
+			}else{
+				targetType = String.class;
+				prop1 = new StringProperty(pkey);
+			}
+			Object pvalue = ObjectConvert.Converter(targetType, value);
+			prop1.setValue(pvalue);
+			props.register(prop1);
+		}
+		
 
 	}
 
@@ -180,12 +276,37 @@ public class JComponentBeanFactory implements BeanFactory {
 	 * 
 	 * @return the new Java bean instance.
 	 */
-	public Component instantiateBean() throws FormException {
+	public Component instantiateBean(boolean setDefaults) throws FormException {
 		try {
-			return (Component) m_comp_class.newInstance();
+			if(m_bean == null){
+				return (Component) m_comp_class.newInstance();
+			}else{
+				Component comp = m_bean.newComponent();
+				if(setDefaults) initializeBean(comp);
+				return comp;
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new FormException(e);
+		}
+	}
+	
+	protected void initializeBean(Component comp){
+		if(m_bean == null) return;
+		Properties props = m_bean.getInitializeProperties();
+		if(props == null) return ;
+		for(Object key:props.keySet()){
+			Method method = m_bean.getInitializeMethod(key.toString());
+			Class clazz = m_bean.getInitializeClass(key.toString());
+			if(method != null){
+				try {
+					Object value = ObjectConvert.Converter(clazz, props.getProperty(key.toString()));
+					method.invoke(comp,value );
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

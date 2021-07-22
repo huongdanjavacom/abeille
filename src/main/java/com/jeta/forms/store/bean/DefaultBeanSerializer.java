@@ -66,6 +66,7 @@ public class DefaultBeanSerializer implements BeanSerializer {
 	 * m_default_beans<Class,Component>
 	 */
 	private static HashMap m_default_beans = new HashMap();
+	private static HashMap m_default_beans2 = new HashMap();
 
 	/**
 	 * The current look and feel. We clear the default bean map when the look
@@ -144,6 +145,22 @@ public class DefaultBeanSerializer implements BeanSerializer {
 		}
 		return jbean;
 	}
+	private JETABean getDefaultBean(String beanId,String className) {
+		if (isLookAndFeelChanged()) {
+			m_default_beans2.clear();
+		}
+
+		JETABean jbean = (JETABean) m_default_beans2.get(beanId);
+		if (jbean == null) {
+			try {
+				jbean = JETABeanFactory.createBean(beanId,className, null, true, false);
+				m_default_beans2.put(beanId, jbean);
+			} catch (Exception e) {
+				FormsLogger.severe(e);
+			}
+		}
+		return jbean;
+	}
 
 	/**
 	 * Check if the look and feel has changed since the last time we called this
@@ -208,7 +225,8 @@ public class DefaultBeanSerializer implements BeanSerializer {
 			Component comp = jbean.getDelegate();
 			if (comp != null) {
 				ppm.setBeanClassName(comp.getClass().getName());
-				JETABean default_bean = getDefaultBean(comp.getClass());
+				JETABean default_bean = getDefaultBean(jbean.getBeanID(),ppm.getBeanClassName());
+				if (default_bean == null) default_bean = getDefaultBean(comp.getClass());
 				if (default_bean != null) {
 					/**
 					 * Iterate over all properties in the bean and store those

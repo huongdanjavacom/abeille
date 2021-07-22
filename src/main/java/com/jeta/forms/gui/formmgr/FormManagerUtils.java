@@ -43,7 +43,6 @@ import com.jeta.forms.gui.common.FormException;
 import com.jeta.forms.gui.common.FormUtils;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.logger.FormsLogger;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.jml.JMLException;
 import com.jeta.forms.store.jml.JMLUtils;
 import com.jeta.forms.store.memento.FormMemento;
@@ -182,16 +181,9 @@ public class FormManagerUtils {
 			 * yet stored back to disk. Design mode can be false in the design
 			 * when doing a 'preview'
 			 */
-			ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-			FormUtils.safeAssert(pmgr != null);
-			if (pmgr != null) {
-				String abspath = pmgr.getAbsolutePath(relativePath);
-				if (abspath != null) {
-					File f = new File(abspath);
-					if (f.isFile()) {
-						return openForm(new FileInputStream(f));
-					}
-				}
+			File f = new File(relativePath);
+			if (f.isFile()) {
+				return openForm(new FileInputStream(f));
 			}
 
 			FormsLogger.debug("FormManagerUtils.loadForm: " + relativePath);

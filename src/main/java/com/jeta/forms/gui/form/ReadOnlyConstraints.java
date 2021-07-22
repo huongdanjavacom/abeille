@@ -31,7 +31,7 @@ package com.jeta.forms.gui.form;
 
 import java.awt.Insets;
 
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 
 /**
  * A read-only implementation of ComponentConstraints.

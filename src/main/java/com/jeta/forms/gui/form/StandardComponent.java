@@ -167,7 +167,7 @@ public class StandardComponent extends GridComponent {
 	public void setState(ComponentMemento state) throws FormException {
 		try {
 			BeanMemento bm = (BeanMemento) state;
-
+			String beanID = bm.getJETABeanID();
 			/**
 			 * this is required when running outside the designer. it is needed
 			 * to support custom swing components that are scrollable
@@ -176,7 +176,7 @@ public class StandardComponent extends GridComponent {
 				JETABeanFactory.tryRegisterCustomFactory(bm.getBeanClass(), true);
 			}
 
-			JETABean jbean = JETABeanFactory.createBean(bm.getBeanClass(), null, false, true);
+			JETABean jbean = JETABeanFactory.createBean(beanID,bm.getBeanClass(), null, false, true);
 			if (jbean == null) {
 				jbean = new JETABean();
 			}

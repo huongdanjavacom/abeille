@@ -29,10 +29,10 @@ import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.form.GridViewEvent;
 import com.jeta.forms.gui.form.GridViewListener;
 import com.jeta.forms.gui.form.ReadOnlyConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.gui.framework.JETAController;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.swingbuilder.gui.components.IntegerDocument;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Displays the cell constraints for a cell

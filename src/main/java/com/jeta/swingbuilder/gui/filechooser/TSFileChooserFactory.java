@@ -209,6 +209,7 @@ public class TSFileChooserFactory {
 	public static File showSaveDialog(FileChooserConfig fcc) {
 		TSUserProperties userprops = (TSUserProperties) JETARegistry.lookup(TSUserProperties.COMPONENT_ID);
 		String last_dir = fcc.getInitialDirectory();
+		String last_file = fcc.getInitialFile();
 		File selected_file = null;
 		if (last_dir != null) {
 			File f = new File(last_dir);
@@ -220,10 +221,17 @@ public class TSFileChooserFactory {
 						last_dir = userprops.getProperty(LAST_DIRECTORY, null);
 					}
 				}
+				selected_file = new File(last_dir + File.separator + last_file);
+			}
+			else if (f.isDirectory()) {
+				selected_file = new File(last_dir + File.separator + last_file);
 			}
 			else if (f.isFile()) {
 				selected_file = f;
 			}
+		}else{
+			last_dir = userprops.getProperty(LAST_DIRECTORY, null);
+			selected_file = new File(last_dir + File.separator + last_file);
 		}
 
 		String ftype = fcc.getFileType();

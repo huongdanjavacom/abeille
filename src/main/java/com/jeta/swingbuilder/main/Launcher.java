@@ -18,6 +18,8 @@
 
 package com.jeta.swingbuilder.main;
 
+import javax.swing.UIManager;
+
 /**
  * This is the main entry point for the Abeille Forms application.
  * 
@@ -30,7 +32,11 @@ public class Launcher {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+		System.setProperty("jeta1.debug","true");
+		
+		
 		AbeilleForms fi = new AbeilleForms();
-		fi.launch(args);
+		fi.launch(args,true);
 	}
 }

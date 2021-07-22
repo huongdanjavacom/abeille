@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.beans.PropertyEditor;
 
 import com.jeta.forms.gui.common.FormUtils;
+import com.jeta.forms.logger.FormsLogger;
 
 public class PropertyEditorCache {
 	/**
@@ -57,16 +58,23 @@ public class PropertyEditorCache {
 			editor = m_model.getPropertyEditor(row);
 			if (editor != null) {
 				try {
-					m_editors[row] = (PropertyEditor) editor.getClass().newInstance(); // we
-																						// need
-																						// to
-																						// create
-																						// a
-																						// copy
-																						// here
-					editor = m_editors[row];
+					// we need to create a copy here
+					// fix error for java.lang.InstantiationException: com.sun.beans.editors.EnumEditor
+					if(!"com.sun.beans.editors.EnumEditor".equals(editor.getClass().getName())){
+						m_editors[row] = (PropertyEditor) editor.getClass().newInstance(); 
+						editor = m_editors[row];
+					}else{
+						editor = null;
+					}
+					if(editor != null){
+						if(editor instanceof JETAPropertyEditor){
+							((JETAPropertyEditor)editor).setCustom(m_model.isCustomProperties());
+							((JETAPropertyEditor)editor).setEnabled(m_model.getPropertyRW(row));
+						}
+					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					FormsLogger.debug(e);
+					//e.printStackTrace();
 				}
 			}
 		}

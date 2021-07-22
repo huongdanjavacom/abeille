@@ -21,7 +21,7 @@ package com.jeta.swingbuilder.gui.commands;
 import javax.swing.undo.CannotRedoException;
 
 import com.jeta.forms.gui.form.FormComponent;
-import com.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 
 public class EditRowSpecCommand extends FormUndoableEdit {
 	/**

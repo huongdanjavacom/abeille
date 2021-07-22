@@ -96,6 +96,8 @@ public class JETABean extends JPanel {
 	 */
 	private HashMap m_custom_properties = new HashMap();
 
+	private String m_beanID = null;
+
 	/**
 	 * Creates a <code>JETABean</code> instance.
 	 */
@@ -173,7 +175,8 @@ public class JETABean extends JPanel {
 			try {
 				if (m_delegate != null) {
 					BeanInfo info = Introspector.getBeanInfo(m_delegate.getClass());
-					m_beaninfo = new DynamicBeanInfo(info, null);
+					//m_beaninfo = new DynamicBeanInfo(info, null);
+					m_beaninfo = new DynamicBeanInfo(info, m_custom_properties.values());
 				}
 			} catch (Exception e) {
 				FormsLogger.severe(e);
@@ -260,6 +263,7 @@ public class JETABean extends JPanel {
 		try {
 			memento.setJETABeanClass(getClass().getName());
 			if (m_delegate != null && m_delegate.getClass() != null) {
+				memento.setJETABeanID(this.getBeanID());
 				memento.setBeanClass(m_delegate.getClass().getName());
 				BeanSerializerFactory fac = (BeanSerializerFactory) JETARegistry.lookup(BeanSerializerFactory.COMPONENT_ID);
 				if (fac != null) {
@@ -440,5 +444,13 @@ public class JETABean extends JPanel {
 			JETAProperty jprop = (JETAProperty) iter.next();
 			jprop.postInitialize(panel, this);
 		}
+	}
+
+	public String getBeanID() {
+		return m_beanID;
+	}
+
+	public void setBeanID(String beanID) {
+		this.m_beanID = beanID;
 	}
 }

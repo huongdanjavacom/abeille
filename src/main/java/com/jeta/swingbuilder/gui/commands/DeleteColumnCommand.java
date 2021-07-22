@@ -30,8 +30,8 @@ import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.store.memento.FormGroupSet;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
 
 /**
  * Command that deletes a column from a view.

@@ -28,6 +28,8 @@ import java.util.Iterator;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+import com.jeta.forms.store.properties.OptionListProperty;
+import com.jeta.forms.store.properties.StringListProperty;
 import com.jeta.forms.store.properties.TransformOptionsProperty;
 import com.jeta.swingbuilder.gui.properties.JETAPropertyEditor;
 
@@ -46,6 +48,7 @@ public class ComboEditor extends JETAPropertyEditor {
 	}
 
 	public Component getCustomEditor() {
+		if(isCustom()) m_cbox.setEnabled(isEnabled());
 		return m_panel;
 	}
 
@@ -78,6 +81,30 @@ public class ComboEditor extends JETAPropertyEditor {
 				}
 			}
 			m_cbox.setSelectedItem(p.getCurrentItem());
+		}
+		else if (value instanceof StringListProperty) {
+			StringListProperty p = (StringListProperty) value;
+			m_cbox.removeAllItems();
+			Collection c = p.getValues();
+			if (c != null) {
+				Iterator iter = c.iterator();
+				while (iter.hasNext()) {
+					m_cbox.addItem(iter.next());
+				}
+			}
+			m_cbox.setSelectedItem(p.getValue());
+		}
+		else if (value instanceof OptionListProperty) {
+			OptionListProperty p = (OptionListProperty) value;
+			m_cbox.removeAllItems();
+			Collection c = p.getValues();
+			if (c != null) {
+				Iterator iter = c.iterator();
+				while (iter.hasNext()) {
+					m_cbox.addItem(iter.next());
+				}
+			}
+			m_cbox.setSelectedItem(p.getValue());
 		}
 		else {
 			// assert( false );

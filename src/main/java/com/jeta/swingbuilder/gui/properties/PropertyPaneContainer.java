@@ -39,14 +39,14 @@ import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridViewEvent;
 import com.jeta.forms.gui.form.GridViewListener;
 import com.jeta.forms.logger.FormsLogger;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
 import com.jeta.open.gui.framework.JETADialog;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.gui.utils.JETAToolbox;
 import com.jeta.open.i18n.I18N;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 import com.jeta.swingbuilder.resources.Icons;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * The container for the property pane

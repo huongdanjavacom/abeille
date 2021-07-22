@@ -40,6 +40,7 @@ public class UnknownEditor extends JETAPropertyEditor {
 	}
 
 	public Component getCustomEditor() {
+		if(isCustom()) m_field.setEnabled(isEnabled());
 		return m_panel;
 	}
 

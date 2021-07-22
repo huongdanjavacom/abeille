@@ -38,7 +38,6 @@ import com.jeta.forms.gui.form.DefaultFormComponentFactory;
 import com.jeta.forms.gui.form.FormComponentFactory;
 import com.jeta.forms.logger.ConsoleHandler;
 import com.jeta.forms.logger.FormsLogger;
-import com.jeta.forms.project.RuntimeProjectManager;
 import com.jeta.forms.store.bean.BeanSerializerFactory;
 import com.jeta.forms.store.bean.DefaultBeanSerializerFactory;
 import com.jeta.open.registry.JETARegistry;
@@ -67,7 +66,6 @@ public class DefaultInitializer {
 				/** required for the forms framework */
 				com.jeta.open.defaults.DefaultInitializer.initialize();
 				JETARegistry.rebind(ColorManager.COMPONENT_ID, new DefaultColorManager());
-				JETARegistry.rebind(RuntimeProjectManager.COMPONENT_ID, new RuntimeProjectManager());
 				JETARegistry.rebind(BeanSerializerFactory.COMPONENT_ID, new DefaultBeanSerializerFactory());
 				JETARegistry.rebind(FormComponentFactory.COMPONENT_ID, new DefaultFormComponentFactory());
 				JETARegistry.rebind(INIT_FLAG, Boolean.TRUE);

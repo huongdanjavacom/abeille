@@ -25,8 +25,11 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 import com.jeta.forms.gui.components.ComponentSource;
+import com.jeta.forms.gui.form.ComponentConstraints;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
+import com.jeta.forms.gui.form.ReadOnlyConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
 
 /**
@@ -55,6 +58,10 @@ public class MoveComponentCommand extends FormUndoableEdit {
 	private FormComponent m_destform;
 
 	private FormEditor m_editor;
+	
+	private CellConstraints m_ccd0; 
+	private CellConstraints m_ccd1; 
+	private GridComponent m_destCell;
 
 	/**
 	 * ctor
@@ -62,6 +69,11 @@ public class MoveComponentCommand extends FormUndoableEdit {
 	public MoveComponentCommand(FormComponent destForm, GridComponent destCell, FormComponent sourceForm, GridComponent sourceCell, ComponentSource compSrc) {
 		super(sourceForm);
 		try {
+			m_destCell = destCell;
+			CellConstraints ccs = sourceCell.getConstraints().createCellConstraints();
+			m_ccd0 = destCell.getConstraints().createCellConstraints();
+			m_ccd1 = new CellConstraints(m_ccd0.gridX, m_ccd0.gridY, ccs.gridWidth, ccs.gridHeight);
+			
 			m_destform = destForm;
 			m_editor = FormEditor.getEditor(destForm);
 			m_delete_cmd = new DeleteComponentCommand(sourceCell, compSrc);
@@ -77,6 +89,7 @@ public class MoveComponentCommand extends FormUndoableEdit {
 	public void redo() throws CannotRedoException {
 		super.redo();
 		if (m_delete_cmd != null) {
+			getView().setConstraints(m_destCell, m_ccd1);
 			m_delete_cmd.redo();
 			m_replace_cmd.redo();
 			/**
@@ -111,6 +124,7 @@ public class MoveComponentCommand extends FormUndoableEdit {
 		if (m_delete_cmd != null) {
 			m_replace_cmd.undo();
 			m_delete_cmd.undo();
+			getView().setConstraints(m_destCell, m_ccd0);
 		}
 	}
 

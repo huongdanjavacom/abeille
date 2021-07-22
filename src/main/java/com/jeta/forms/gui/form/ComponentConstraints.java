@@ -31,7 +31,7 @@ package com.jeta.forms.gui.form;
 
 import java.awt.Insets;
 
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 
 /**
  * An interface that defines the attributes of a CellConstraints object in a

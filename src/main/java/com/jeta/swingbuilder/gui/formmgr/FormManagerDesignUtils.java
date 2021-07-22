@@ -29,19 +29,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TreeSet;
 
-import javax.swing.JOptionPane;
-
 import com.jeta.forms.gui.common.FormException;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.formmgr.FormManager;
 import com.jeta.forms.logger.FormsLogger;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.memento.FormMemento;
 import com.jeta.forms.store.memento.StateRequest;
 import com.jeta.open.gui.utils.JETAToolbox;
-import com.jeta.open.i18n.I18N;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.open.support.EmptyCollection;
 import com.jeta.swingbuilder.gui.dnd.FormObjectFlavor;
@@ -304,20 +300,7 @@ public class FormManagerDesignUtils {
 		FileChooserConfig fcc = new FileChooserConfig(".form", new TSFileFilter("jfrm,xml", "Form Files(*.jfrm,*.xml)"));
 		fcc.setParentComponent(getApplicationFrame());
 		File f = TSFileChooserFactory.showOpenDialog(fcc);
-		if (f != null) {
-			ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-			/** check if the path is contained in a valid package for the project */
-			if (pmgr.isValidAbsolutePath(f.getPath())) {
-				return f;
-			}
-			else {
-				String msg = I18N.getLocalizedMessage("Selected_form_not_in_source_path");
-				String title = I18N.getLocalizedMessage("Error");
-
-				JOptionPane.showMessageDialog(FormManagerDesignUtils.getApplicationFrame(), msg, title, JOptionPane.ERROR_MESSAGE);
-			}
-		}
-		return null;
+		return f;
 	}
 
 	public static void registerForms(FormManager fmgr, Container cc) {

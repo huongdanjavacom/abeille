@@ -29,6 +29,8 @@
 
 package com.jeta.forms.store.memento;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -38,6 +40,16 @@ import java.util.Iterator;
 import com.jeta.forms.store.AbstractJETAPersistable;
 import com.jeta.forms.store.JETAObjectInput;
 import com.jeta.forms.store.JETAObjectOutput;
+import com.jeta.forms.store.properties.BooleanProperty;
+import com.jeta.forms.store.properties.ColorProperty;
+import com.jeta.forms.store.properties.ColorProperty2;
+import com.jeta.forms.store.properties.DoubleProperty;
+import com.jeta.forms.store.properties.FloatProperty;
+import com.jeta.forms.store.properties.FontProperty;
+import com.jeta.forms.store.properties.FontProperty2;
+import com.jeta.forms.store.properties.IntegerProperty;
+import com.jeta.forms.store.properties.LongProperty;
+import com.jeta.forms.store.properties.StringProperty;
 import com.jeta.forms.store.support.PropertyMap;
 
 /**
@@ -148,6 +160,32 @@ public class PropertiesMemento extends AbstractJETAPersistable {
 	 */
 	public Object getPropertyValue(String propName) {
 		return m_props.get(propName);
+	}
+	public Object getPropertyValueEx(String propName) {
+		Object value = m_props.get(propName);
+		if(value instanceof IntegerProperty){
+			return ((IntegerProperty)value).getValue();
+		}else if(value instanceof LongProperty){
+			return ((LongProperty)value).getValue();
+		}else if(value instanceof FloatProperty){
+			return ((FloatProperty)value).getValue();
+		}else if(value instanceof DoubleProperty){
+			return ((DoubleProperty)value).getValue();
+		}else if(value instanceof BooleanProperty){
+			return ((BooleanProperty)value).getValue();
+		}else if(value instanceof ColorProperty2){
+			return ((ColorProperty2)value).getValue();
+		}else if(value instanceof FontProperty2){
+			return ((FontProperty2)value).getValue();
+		}else if(value instanceof StringProperty){
+			return ((StringProperty)value).getValue();
+		}else if(value instanceof ColorProperty){
+			return ((ColorProperty)value).getColor();
+		}else if(value instanceof FontProperty){
+			return ((FontProperty)value).getFont();
+		}else{
+		}
+		return value;
 	}
 
 	/**

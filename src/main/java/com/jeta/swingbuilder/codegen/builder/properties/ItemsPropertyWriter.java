@@ -25,7 +25,7 @@ import javax.swing.JComboBox;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.ItemsProperty;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
 import com.jeta.swingbuilder.codegen.builder.PropertyWriter;
@@ -35,7 +35,7 @@ public class ItemsPropertyWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			if (value instanceof ItemsProperty) {
 				ItemsProperty iprop = (ItemsProperty) value;

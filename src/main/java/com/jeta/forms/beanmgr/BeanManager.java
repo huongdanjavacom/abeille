@@ -30,8 +30,15 @@
 package com.jeta.forms.beanmgr;
 
 import java.util.Collection;
+import java.util.Properties;
 
+import javax.swing.Icon;
+
+import com.jeta.forms.gui.beans.JETABeanFactory;
 import com.jeta.forms.gui.common.FormException;
+import com.jeta.swingbuilder.gui.beanmgr.BeanLoader;
+import com.jeta.swingbuilder.gui.beanmgr.DefaultBean;
+import com.jeta.swingbuilder.store.RegisteredBean;
 
 /**
  * The bean manager is responsible for managing imported beans in the designer.
@@ -40,6 +47,10 @@ import com.jeta.forms.gui.common.FormException;
  */
 public interface BeanManager {
 	public static final String COMPONENT_ID = "jeta.forms.bean.manager";
+	
+	public static final String ID_EMBEDDED_FORM_COMPONENT = "embedded.form.tool";
+	public static final String ID_LINKED_FORM_COMPONENT = "linked.form.tool";
+	public static final String ID_GENERIC_COMPONENT = "generic.component";
 
 	/**
 	 * @return the underlying class loader for loading imported beans. This can
@@ -47,14 +58,34 @@ public interface BeanManager {
 	 */
 	public ClassLoader getClassLoader() throws FormException;
 
+	public BeanLoader getBeanLoader() ;
+	
+	/**
+	 * 
+	 * @param beanID
+	 * @return
+	 */
+	public boolean containsBean(String beanID);
 	/**
 	 * @return the class for the given bean class name
+	 * @param beanID
 	 */
-	public Class getBeanClass(String beanClassName) throws FormException;
+	public Class getBeanClass(String beanID) throws FormException;
 
 	/**
-	 * @return the imported beans in the model
+	 * 
+	 * @param beanID
+	 * @return
 	 */
-	public Collection getImportedBeans();
+	public RegisteredBean getRegisteredBean(String beanID);
+	/**
+	 * 
+	 * @return
+	 */
+	public Collection getBeans();
+	
+	public void registerCustomDefaultBean(String id,String description, String className, Icon icon,Properties custom,Properties initlize,Properties codeOnly, boolean scrollable) throws FormException ;
+	public void registerCustomDefaultBean(String id,String description, String className, Icon icon, Class[] params, Object[] args,Properties custom,Properties initlize,Properties codeOnly, boolean scrollable) throws FormException ;
+	
 
 }

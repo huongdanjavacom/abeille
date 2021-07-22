@@ -30,8 +30,8 @@ import com.jeta.open.gui.utils.JETAToolbox;
 import com.jeta.open.i18n.I18N;
 import com.jeta.swingbuilder.gui.dimension.DimensionView;
 import com.jeta.swingbuilder.gui.properties.JETAPropertyEditor;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
 
 /**
  * Editor for handling Dimension types.
@@ -60,6 +60,8 @@ public class DimensionEditor extends JETAPropertyEditor {
 	}
 
 	public Component getCustomEditor() {
+		//if(isCustom()) m_width.setEnabled(getEnabled());
+		//if(isCustom()) m_height.setEnabled(getEnabled());
 		return m_panel;
 	}
 

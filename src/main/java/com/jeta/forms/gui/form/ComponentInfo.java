@@ -29,7 +29,7 @@
 
 package com.jeta.forms.gui.form;
 
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 
 /**
  * A <code>ComponentInfo</code> maintains an assocation between a

@@ -23,18 +23,40 @@ import java.util.Iterator;
 
 public class VariableDeclaration extends MultiParameterStatement {
 	private Class m_obj_class;
-	private String m_declaration;
 	private DeclarationManager m_decl_mgr;
 	private String m_varname;
+	private boolean m_decl_initializer;
 	private String m_initializer;
+	private String m_declaration;
 
 	/** Creates a member variable declaration */
 	public VariableDeclaration(DeclarationManager declMgr, Class objClass, String varName, boolean local) {
-		this(declMgr, objClass, varName, local, null);
+		this(declMgr, objClass, varName, local, false, null, null);
 	}
 
 	/** Creates a member variable declaration */
+	public VariableDeclaration(DeclarationManager declMgr, Class objClass, String varName, boolean local, boolean declInitializer) {
+		this(declMgr, objClass, varName, local, declInitializer, null, null);
+	}
+	
+	/** Creates a member variable declaration */
 	public VariableDeclaration(DeclarationManager declMgr, Class objClass, String varName, boolean local, String initializer) {
+		this(declMgr, objClass, varName, local, true, null, null);
+	}
+
+	/** Creates a member variable declaration */
+	public VariableDeclaration(DeclarationManager declMgr, Class objClass, String varName, String initializer) {
+		this(declMgr, objClass, varName, false, true, initializer, null);
+	}
+
+	/** Creates a member variable declaration */
+	public VariableDeclaration(DeclarationManager declMgr, Class objClass, String varName, String initializer,String declaration) {
+		this(declMgr, objClass, varName, false, true, initializer, declaration);
+	}
+
+	/** Creates a member variable declaration */
+	public VariableDeclaration(DeclarationManager declMgr, Class objClass, String varName, boolean local, boolean declInitializer, String initializer,String declaration) {
+		m_declaration = declaration;
 		m_decl_mgr = declMgr;
 		m_obj_class = objClass;
 		if (objClass != com.jeta.forms.gui.form.GridView.class) {
@@ -44,7 +66,7 @@ public class VariableDeclaration extends MultiParameterStatement {
 			m_varname = m_decl_mgr.createLocalVariable(objClass, varName);
 		else
 			m_varname = m_decl_mgr.createMemberVariable(objClass, varName);
-
+		m_decl_initializer = declInitializer;
 		m_initializer = initializer;
 	}
 
@@ -58,23 +80,32 @@ public class VariableDeclaration extends MultiParameterStatement {
 		else
 			return m_initializer;
 	}
+	
+	public boolean isStatic(){
+		if(m_declaration == null) return false;
+		if(m_declaration.indexOf(" static") == -1) return false;
+		return true;
+	}
 
 	public void output(SourceBuilder builder) {
 		builder.print(DeclarationHelper.trimPackage(m_obj_class));
 		builder.print(" ");
 		builder.print(m_varname);
-		builder.print(" = ");
-		builder.print(getInitializer());
-		builder.print("(");
-		Collection params = getParameters();
-		Iterator iter = params.iterator();
-		while (iter.hasNext()) {
-			Expression expr = (Expression) iter.next();
-			expr.output(builder);
-			if (iter.hasNext())
-				builder.print(',');
+		if(m_decl_initializer){
+			builder.print(" = ");
+			builder.print(getInitializer());
+			builder.print("(");
+			Collection params = getParameters();
+			Iterator iter = params.iterator();
+			while (iter.hasNext()) {
+				Expression expr = (Expression) iter.next();
+				expr.output(builder);
+				if (iter.hasNext())
+					builder.print(',');
+			}
+			builder.print(")");
 		}
-		builder.print(");");
+		builder.print(";");
 		builder.println();
 	}
 }

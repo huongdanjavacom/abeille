@@ -37,7 +37,7 @@ public class GenericComponentFactory extends SwingComponentFactory {
 	 * ctor
 	 */
 	public GenericComponentFactory(ComponentSource compSrc) {
-		super(compSrc, null);
+		super(compSrc,(String)null);
 	}
 
 	public GridComponent createComponent(String compName, GridView view) throws FormException {

@@ -26,6 +26,9 @@ public class JavaExternalizableObjectOutput implements JETAObjectOutput {
 	public void writeObject(String tagName, Object obj) throws IOException {
 		m_out.writeObject(obj);
 	}
+	public void writeString(String tagName, String strVlaue) throws IOException {
+		m_out.writeObject(strVlaue);
+	}
 
 	public void writeBoolean(String string, boolean boolValue) throws IOException {
 		m_out.writeBoolean(boolValue);
@@ -46,5 +49,28 @@ public class JavaExternalizableObjectOutput implements JETAObjectOutput {
 
 	public void writeBoolean(String string, boolean bval, boolean defaultValue) throws IOException {
 		m_out.writeBoolean(bval);
+	}
+
+	
+	
+	public void writeDouble(String tagName, double value) throws IOException {
+		m_out.writeDouble(value);
+	}
+
+	
+	public void writeDouble(String string, double value, double defaultValue)
+			throws IOException {
+		m_out.writeDouble(value);
+	}
+
+	
+	public void writeLong(String tagName, long value) throws IOException {
+		m_out.writeLong(value);
+	}
+
+	
+	public void writeLong(String string, long value, long defaultValue)
+			throws IOException {
+		m_out.writeLong(value);
 	}
 }

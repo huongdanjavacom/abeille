@@ -61,4 +61,30 @@ public class XMLObjectInput implements JETAObjectInput {
 		return (pvalue == null ? defaultValue : Float.parseFloat(pvalue.toString()));
 	}
 
+	
+	
+	public double readDouble(String propName) throws IOException {
+		Object pvalue = m_handler.getProperty(propName);
+		return (pvalue == null ? 0.0f : Double.parseDouble(pvalue.toString()));
+	}
+
+	
+	public double readDouble(String propName, double defaultValue)
+			throws IOException {
+		Object pvalue = m_handler.getProperty(propName);
+		return (pvalue == null ? defaultValue : Double.parseDouble(pvalue.toString()));
+	}
+
+	
+	public long readLong(String propName) throws IOException {
+		Object pvalue = m_handler.getProperty(propName);
+		return (pvalue == null ? 0 : Long.parseLong(pvalue.toString()));
+	}
+
+	
+	public long readLong(String propName, long defaultValue) throws IOException {
+		Object pvalue = m_handler.getProperty(propName);
+		return (pvalue == null ? defaultValue : Long.parseLong(pvalue.toString()));
+	}
+
 }

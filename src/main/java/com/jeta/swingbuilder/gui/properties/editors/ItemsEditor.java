@@ -83,6 +83,7 @@ public class ItemsEditor extends JETAPropertyEditor {
 	 * @return the editor component
 	 */
 	public Component getCustomEditor() {
+		if(isCustom()) m_items_label.setEnabled(isEnabled());
 		return m_panel;
 	}
 

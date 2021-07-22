@@ -23,6 +23,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 
 import com.jeta.forms.store.properties.TabbedPaneProperties;
 import com.jeta.open.gui.framework.JETADialog;
@@ -77,6 +78,9 @@ public class TabbedPaneEditor extends JETAPropertyEditor {
 	 */
 	public void paintValue(Graphics g, Rectangle rect) {
 		// forward the call to the value painter
+		if(isCustom() && !isEnabled() ){
+			g.setColor(UIManager.getColor("Label.disabledForeground"));
+		}
 		m_value_painter.paintValue(g, rect);
 	}
 

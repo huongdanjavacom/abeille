@@ -33,12 +33,30 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPasswordField;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.JTree;
 
 import com.jeta.forms.components.border.TitledBorderBottom;
 import com.jeta.forms.components.border.TitledBorderLabel;
 import com.jeta.forms.components.border.TitledBorderSide;
+import com.jeta.forms.components.colors.JETAColorWell;
 import com.jeta.forms.components.image.ImageComponent;
 import com.jeta.forms.components.label.JETALabel;
 import com.jeta.forms.components.line.HorizontalLineComponent;
@@ -74,6 +92,10 @@ import com.jeta.forms.gui.beans.factories.VerticalLineComponentFactory;
 import com.jeta.forms.gui.common.FormException;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.logger.FormsLogger;
+import com.jeta.open.i18n.I18N;
+import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
+import com.jeta.swingbuilder.resources.Icons;
+import com.jeta.swingbuilder.store.RegisteredBean;
 
 /**
  * This is a factory for creating a JETABean wrapper for a given Swing component
@@ -106,39 +128,45 @@ public class JETABeanFactory {
 	private static HashMap m_custom_factories = new HashMap();
 
 	static {
-		/** standard swing components */
-		registerFactory("javax.swing.JButton", new ButtonBeanFactory());
-		registerFactory("javax.swing.JToggleButton", new ToggleButtonFactory());
-		registerFactory("javax.swing.JCheckBox", new CheckBoxBeanFactory());
-		registerFactory("javax.swing.JComboBox", new ComboBoxBeanFactory());
-		registerFactory("javax.swing.JList", new ListBeanFactory());
-		registerFactory("javax.swing.JRadioButton", new RadioButtonBeanFactory());
-		registerFactory("javax.swing.JTextField", new TextFieldBeanFactory());
-		registerFactory("javax.swing.JPasswordField", new PasswordFieldBeanFactory());
-		registerFactory("javax.swing.JTextArea", new TextAreaBeanFactory());
-		registerFactory("javax.swing.JTable", new TableBeanFactory());
-		registerFactory("javax.swing.JProgressBar", new ProgressBarFactory());
-		registerFactory("javax.swing.JSlider", new SliderFactory());
-		registerFactory("javax.swing.JTree", new TreeFactory());
-		registerFactory("javax.swing.JEditorPane", new EditorPaneFactory());
-		registerFactory("javax.swing.JTabbedPane", new TabbedPaneFactory());
-		registerFactory("javax.swing.JFormattedTextField", new FormattedTextFieldFactory());
-
 		/* special case for JLabel since we have a custom JETALabel */
 		LabelBeanFactory lbf = new LabelBeanFactory();
 		lbf.setBeanClass(JLabel.class);
 		registerFactory("javax.swing.JLabel", lbf);
+		registerFactory(JETALabel.class.getName(), new LabelBeanFactory());
+		
+		/** standard swing components */
+		registerFactory("javax.swing.JRadioButton", new RadioButtonBeanFactory());
+		registerFactory("javax.swing.JCheckBox", new CheckBoxBeanFactory());
+		registerFactory("javax.swing.JButton", new ButtonBeanFactory());
+		registerFactory("javax.swing.JToggleButton", new ToggleButtonFactory());
+		registerFactory("javax.swing.JComboBox", new ComboBoxBeanFactory());
+		registerFactory("javax.swing.JList", new ListBeanFactory());
+		registerFactory("javax.swing.JTable", new TableBeanFactory());
+		registerFactory("javax.swing.JTree", new TreeFactory());
+		registerFactory("javax.swing.JProgressBar", new ProgressBarFactory());
+		registerFactory("javax.swing.JSlider", new SliderFactory());
+
+		registerFactory("javax.swing.JTextField", new TextFieldBeanFactory());
+		registerFactory("javax.swing.JPasswordField", new PasswordFieldBeanFactory());
+		registerFactory("javax.swing.JFormattedTextField", new FormattedTextFieldFactory());
+		registerFactory("javax.swing.JTextArea", new TextAreaBeanFactory());
+		registerFactory("javax.swing.JEditorPane", new EditorPaneFactory());
+		registerFactory("javax.swing.JTabbedPane", new TabbedPaneFactory());
+
 
 		/** custom jetaware components */
 		registerFactory(HorizontalLineComponent.class.getName(), new HorizontalLineComponentFactory());
 		registerFactory(VerticalLineComponent.class.getName(), new VerticalLineComponentFactory());
-		registerFactory(GridView.class.getName(), new GridViewBeanFactory());
 		registerFactory(ImageComponent.class.getName(), new ImageBeanFactory());
-		registerFactory(JETALabel.class.getName(), new LabelBeanFactory());
+		
 		registerFactory(TitledBorderLabel.class.getName(), new TitledBorderLabelFactory());
 		registerFactory(TitledBorderSide.class.getName(), new TitledBorderSideFactory());
 		registerFactory(TitledBorderBottom.class.getName(), new TitledBorderBottomFactory());
 		registerFactory(TitledSeparator.class.getName(), new TitledSeparatorFactory());
+		
+		registerFactory(GridView.class.getName(), new GridViewBeanFactory());
+		
+		
 	}
 
 	/**
@@ -186,6 +214,26 @@ public class JETABeanFactory {
 			return null;
 		}
 	}
+	public static JETABean createBean(String beanID,String compClass, String compName, boolean instantiateBean, boolean setDefaults) throws FormException {
+		if (compClass != null) {
+			compClass = compClass.replace('/', '.');
+			compClass = compClass.replace('\\', '.');
+		}
+		BeanFactory factory = null;
+		if(beanID != null){
+			factory = (BeanFactory) lookupFactory(beanID);
+			if (factory != null) {
+				return factory.createBean(compName, instantiateBean, setDefaults);
+			}
+		}
+		factory = (BeanFactory) lookupFactory(compClass);
+		if (factory != null) {
+			return factory.createBean(compName, instantiateBean, setDefaults);
+		}
+		else {
+			return null;
+		}
+	}
 
 	/**
 	 * Creates a bean info object for the given class.
@@ -210,9 +258,10 @@ public class JETABeanFactory {
 	 * custom component factories. Null is returned if a factory is not found.
 	 */
 	private static BeanFactory lookupFactory(String compClass) {
-		BeanFactory factory = (BeanFactory) m_factories.get(compClass);
+		BeanFactory factory = null;
+		factory = (BeanFactory) m_custom_factories.get(compClass);
 		if (factory == null)
-			factory = (BeanFactory) m_custom_factories.get(compClass);
+			factory = (BeanFactory) m_factories.get(compClass);
 
 		return factory;
 	}
@@ -327,6 +376,23 @@ public class JETABeanFactory {
 			JComponentBeanFactory customfactory = new JComponentBeanFactory(compClass);
 			customfactory.setScrollable(scrollable);
 			m_custom_factories.put(compClass.getName(), customfactory);
+		} catch (Exception e) {
+			FormsLogger.debug(e);
+			if (e instanceof FormException)
+				throw (FormException) e;
+			else
+				throw new FormException(e);
+		}
+	}
+	public static void tryRegisterCustomFactory(RegisteredBean bean, boolean scrollable) throws FormException {
+		if(m_custom_factories.containsKey(bean.getId())){
+			return;
+		}
+		try {
+			Class c = Class.forName(bean.getClassName());
+			JComponentBeanFactory customfactory = new JComponentBeanFactory(c,bean);
+			customfactory.setScrollable(scrollable);
+			m_custom_factories.put(bean.getId(), customfactory);
 		} catch (Exception e) {
 			FormsLogger.debug(e);
 			if (e instanceof FormException)

@@ -46,7 +46,6 @@ import com.jeta.forms.gui.common.FormException;
 import com.jeta.forms.gui.common.FormUtils;
 import com.jeta.forms.gui.formmgr.FormManager;
 import com.jeta.forms.logger.FormsLogger;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.bean.BeanDeserializer;
 import com.jeta.forms.store.bean.BeanSerializer;
 import com.jeta.forms.store.bean.BeanSerializerFactory;
@@ -54,6 +53,7 @@ import com.jeta.forms.store.memento.BeanMemento;
 import com.jeta.forms.store.memento.CellConstraintsMemento;
 import com.jeta.forms.store.memento.ComponentMemento;
 import com.jeta.forms.store.memento.FocusPolicyMemento;
+import com.jeta.forms.store.memento.FormCodeModel;
 import com.jeta.forms.store.memento.FormMemento;
 import com.jeta.forms.store.memento.PropertiesMemento;
 import com.jeta.forms.store.memento.StateRequest;
@@ -128,6 +128,11 @@ public class FormComponent extends GridComponent {
 	 */
 	private FocusPolicyMemento m_focus_policy;
 
+	/**
+	 * code build properties
+	 */
+	private FormCodeModel m_codeModel = new FormCodeModel();
+	
 	/**
 	 * Creates a <code>FormComponent</code> instance.
 	 */
@@ -391,7 +396,8 @@ public class FormComponent extends GridComponent {
 	public ComponentMemento getState(StateRequest si) throws FormException {
 		FormMemento state = new FormMemento();
 		GridView view = getChildView();
-
+		
+		state.setCodeModel(getCodeModel());
 		state.setId(getId());
 		state.setComponentClass(FormComponent.class.getName());
 		state.setFocusPolicy(m_focus_policy);
@@ -400,12 +406,6 @@ public class FormComponent extends GridComponent {
 			state.setCellConstraints(getConstraints().createCellConstraints());
 		}
 
-		if (isLinked() && si.isShallowCopy()) {
-			state.setRelativePath(getRelativePath());
-			if (!isTopLevelForm()) {
-				return state;
-			}
-		}
 
 		state.setRowGroups(view.getRowGroups());
 		state.setColumnGroups(view.getColumnGroups());
@@ -457,17 +457,6 @@ public class FormComponent extends GridComponent {
 		}
 	}
 
-	/**
-	 * Returns the relative path to this form. The path is determined by the
-	 * source paths defined in the project settings. If this form is embedded,
-	 * null is returned.
-	 * 
-	 * @return the relative path.
-	 */
-	public String getRelativePath() {
-		ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-		return pmgr.getRelativePath(m_abspath);
-	}
 
 	/**
 	 * Traverses the container hierarchy for the given component and returns the
@@ -704,7 +693,8 @@ public class FormComponent extends GridComponent {
 	 */
 	public void setState(ComponentMemento memento) throws FormException {
 		FormMemento state = (FormMemento) memento;
-
+		
+		setCodeModel(state.getCodeModel());
 		if (state.getRelativePath() == null)
 			m_embedded = true;
 
@@ -834,6 +824,14 @@ public class FormComponent extends GridComponent {
 	 */
 	public void setTopLevelForm(boolean topLevel) {
 		m_top_level_form = topLevel;
+	}
+
+	public FormCodeModel getCodeModel() {
+		return m_codeModel;
+	}
+
+	public void setCodeModel(FormCodeModel codeModel) {
+		this.m_codeModel = codeModel;
 	}
 
 }

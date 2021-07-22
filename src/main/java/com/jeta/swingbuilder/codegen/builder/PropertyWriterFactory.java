@@ -49,6 +49,7 @@ public class PropertyWriterFactory {
 
 	private HashMap m_writers = new HashMap();
 
+	@SuppressWarnings("unchecked")
 	public PropertyWriterFactory() {
 		m_writers.put(String.class, new StringPropertyBuilder());
 		m_writers.put(java.awt.Color.class, new ColorPropertyWriter());
@@ -87,4 +88,16 @@ public class PropertyWriterFactory {
 		PropertyWriter writer = (PropertyWriter) m_writers.get(type);
 		return writer;
 	}
+
+	public BasePanelWriter createPanelWriter(){
+		BasePanelWriter writer = null;
+		writer = new PanelWriter();
+		return  writer;
+	}
+	
+	public BaseBeanWriter createBeanWriter(){
+		BaseBeanWriter writer = new BeanWriter();
+		return  writer;
+	}
+	
 }

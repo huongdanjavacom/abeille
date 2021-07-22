@@ -29,6 +29,8 @@
 
 package com.jeta.forms.gui.common;
 
+import java.awt.Component;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -120,6 +122,18 @@ public class URLClassLoaderHelper {
 		try {
 			Class c = getClass(beanName);
 			return c.newInstance();
+		} catch (Exception e) {
+			if (e instanceof FormException)
+				throw (FormException) e;
+			else
+				throw new FormException(e);
+		}
+	}
+	public Object createObject(String beanName, Class[] params, Object[] args) throws FormException {
+		try {
+			Class c = getClass(beanName);
+			Constructor ctor = c.getConstructor(params);
+			return ctor.newInstance(args);
 		} catch (Exception e) {
 			if (e instanceof FormException)
 				throw (FormException) e;

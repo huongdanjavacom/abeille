@@ -185,7 +185,7 @@ public abstract class JETAController {
 	private void assignAction(JETAContainer view, String commandId, ActionListener action) {
 		Collection comps = view.getComponentsByName(commandId);
 		if (comps.size() == 0) {
-			System.out.println("JETAController.assignAction failed for: " + commandId);
+			System.out.println("JETAController["+view.getClass().getName()+"].assignAction failed for: " + commandId);
 		}
 		Iterator iter = comps.iterator();
 		while (iter.hasNext()) {

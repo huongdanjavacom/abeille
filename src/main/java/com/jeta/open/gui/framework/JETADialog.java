@@ -571,6 +571,16 @@ public class JETADialog extends JDialog {
 		com.jeta.open.gui.utils.JETAToolbox.centerWindow(this);
 		show();
 	}
+	public void showCenterEx() {
+		int width = this.getWidth();
+		int height = this.getHeight();
+		int width1 = this.getOwner().getWidth();
+		int height1 = this.getOwner().getHeight();
+		int left = (int) ((width1 - width) / 2);
+		int top = (int) ((height1 - height) / 2);
+		this.setBounds(left + this.getOwner().getX() , top + this.getOwner().getY(), width, height);
+		show();
+	}
 
 	/**
 	 * Shows/hides the ok button

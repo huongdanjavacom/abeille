@@ -18,9 +18,7 @@
 
 package com.jeta.swingbuilder.gui.images;
 
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.open.i18n.I18N;
-import com.jeta.open.registry.JETARegistry;
 import com.jeta.open.rules.JETARule;
 import com.jeta.open.rules.RuleResult;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
@@ -45,12 +43,6 @@ public class ImagePropertiesValidator implements JETARule {
 			return RuleResult.SUCCESS;
 		}
 
-		ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-		/** check if the path is contained in a valid package for the project */
-		// @todo fix to allow embedded images from anywhere
-		if (!pmgr.isValidResource(path)) {
-			return new RuleResult(I18N.getLocalizedMessage("Selected image is not in source path"));
-		}
-		return RuleResult.SUCCESS;
+		return new RuleResult(I18N.getLocalizedMessage("Selected image is not in path"));
 	}
 }

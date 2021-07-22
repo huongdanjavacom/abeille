@@ -34,8 +34,8 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.jeta.forms.gui.common.FormUtils;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
 
 /**
  * A <code>GridComponentConstraints</code> is a type of bridge to a live
@@ -76,7 +76,7 @@ public class GridComponentConstraints implements ComponentConstraints {
 	 * @link dependency
 	 * @label Gets constraints via reflection
 	 */
-	/* # com.jgoodies.forms.layout.FormLayout lnkFormLayout; */
+	/* # com.jeta.jgoodies.forms.layout.FormLayout lnkFormLayout; */
 
 	/**
 	 * Creates a <code>GridComponentConstraints</code> object that is bound to

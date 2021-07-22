@@ -157,11 +157,14 @@ public class CellAssignmentCache {
 		checkGrid();
 
 		CellAssignment ca = m_grid[row - 1][col - 1];
-		FormUtils.safeAssert(ca != null);
-		FormUtils.safeAssert(ca.m_comp.getRow() == row);
-		FormUtils.safeAssert(ca.m_comp.getColumn() == col);
+		//FormUtils.safeAssert(ca != null);
+		//FormUtils.safeAssert(ca.m_comp != null);
+		//FormUtils.safeAssert(ca.m_comp.getRow() == row);
+		//FormUtils.safeAssert(ca.m_comp.getColumn() == col);
 		if (ca != null) {
-			return ca.m_overlap;
+			if(ca.m_comp != null)
+				if(ca.m_comp.getRow() == row && ca.m_comp.getColumn() == col )
+					return ca.m_overlap;
 		}
 		return null;
 	}

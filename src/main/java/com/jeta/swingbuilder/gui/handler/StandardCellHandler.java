@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import com.jeta.forms.beanmgr.BeanManager;
 import com.jeta.forms.gui.components.ComponentFactory;
 import com.jeta.forms.gui.components.ComponentSource;
 import com.jeta.forms.gui.form.FormComponent;
@@ -32,12 +33,16 @@ import com.jeta.forms.gui.form.GridCellEvent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.open.i18n.I18N;
+import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.commands.AddComponentCommand;
 import com.jeta.swingbuilder.gui.commands.CommandUtils;
 import com.jeta.swingbuilder.gui.commands.EditTextPropertyCommand;
 import com.jeta.swingbuilder.gui.commands.MoveComponentCommand;
+import com.jeta.swingbuilder.gui.editor.DesignFormComponent;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
 import com.jeta.swingbuilder.gui.formmgr.FormManagerDesignUtils;
+import com.jeta.swingbuilder.gui.main.MainPanelPlugin;
+import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 
 /**
  * Mouse event handler for a standard grid cell. This is for a cell that
@@ -138,26 +143,41 @@ public class StandardCellHandler extends AbstractMouseHandler {
 				}
 				else {
 					if (m_compsrc.isSelectionTool()) {
-						gc.setSelected(true);
 						Component comp = gc.getBeanDelegate();
-						if (comp != null && e.getClickCount() == 1) {
-							setDragSource(this);
-						}
-						if (e.getClickCount() > 1) {
-							if ((e.getModifiers() & java.awt.event.InputEvent.CTRL_MASK) != 0) {
-								editComponentName(gc);
+						boolean mult = (e.isControlDown() && comp != null && !DesignFormComponent.class.equals(comp.getClass()));
+						/**
+						 * TODO://
+						 *  can not deal with propertypane whith mult component
+						 *  so set mult = false always 
+						 */
+						mult = false;
+						if(mult){
+							gc.fireGridCellEvent(new GridCellEvent(GridCellEvent.CELL_SELECTED, gc,GridCellEvent.COMPONENT_MULT_SELECTED));
+						}else{
+							gc.setSelected(true);
+							if (comp != null && e.getClickCount() == 1) {
+								setDragSource(this);
 							}
-							else {
-								tryEditDefaultProperty(gc);
-								gc.fireGridCellEvent(new GridCellEvent(GridCellEvent.EDIT_COMPONENT, gc));
+							if (e.getClickCount() > 1) {
+								if ((e.getModifiers() & java.awt.event.InputEvent.CTRL_MASK) != 0) {
+									editComponentName(gc);
+								}
+								else {
+									tryEditDefaultProperty(gc);
+									gc.fireGridCellEvent(new GridCellEvent(GridCellEvent.EDIT_COMPONENT, gc));
+								}
 							}
 						}
 					}
 					else {
+						if(gc.getBeanDelegate() != null){
+							return;
+						}
 						try {
+							GridView view = getView();
 							ComponentFactory factory = m_compsrc.getComponentFactory();
 							if (factory != null) {
-								final GridComponent comp = factory.createComponent("", getView());
+								final GridComponent comp = factory.createComponent("", view);
 								if (comp != null) {
 									/**
 									 * Special case when adding a linked form we
@@ -177,13 +197,20 @@ public class StandardCellHandler extends AbstractMouseHandler {
 										}
 									}
 
-									AddComponentCommand cmd = new AddComponentCommand(getView().getParentForm(), comp, gc.getConstraints());
+									MainPanelPlugin plugin = (MainPanelPlugin) JETARegistry.lookup(MainPanelPlugin.COMPONENT_ID);
+									if(plugin != null){
+										if(!plugin.AddComponentCommand(view.getParentForm(), comp, gc.getConstraints())){
+											m_compsrc.setSelectionTool();
+											return;
+										}
+									}
+									
+									AddComponentCommand cmd = new AddComponentCommand(view.getParentForm(), comp, gc.getConstraints());
 									CommandUtils.invoke(cmd, editor);
 
 									if (!e.isControlDown())
 										m_compsrc.setSelectionTool();
 
-									GridView view = getView();
 									if (view != null)
 										view.deselectAll();
 
@@ -226,8 +253,10 @@ public class StandardCellHandler extends AbstractMouseHandler {
 						FormComponent destForm = getView().getParentForm();
 						GridComponent srcComp = getDragSource().getGridComponent();
 						FormComponent srcForm = FormComponent.getParentForm(srcComp);
-						MoveComponentCommand cmd = new MoveComponentCommand(destForm, destComp, srcForm, srcComp, m_compsrc);
-						CommandUtils.invoke(cmd, editor);
+						if(FormDesignerUtils.canMoveComponent(destComp, srcComp)){
+							MoveComponentCommand cmd = new MoveComponentCommand(destForm, destComp, srcForm, srcComp, m_compsrc);
+							CommandUtils.invoke(cmd, editor);
+						}
 						m_compsrc.setSelectionTool();
 						srcComp.setSelected(true);
 						/**

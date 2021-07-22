@@ -29,36 +29,214 @@ import com.jeta.forms.store.memento.ComponentMemento;
 import com.jeta.forms.store.memento.FormGroupSet;
 import com.jeta.forms.store.memento.FormMemento;
 import com.jeta.forms.store.memento.PropertiesMemento;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.Sizes;
+import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
-import com.jgoodies.forms.layout.Sizes;
 
 /**
  * Builds the Java Source for a form and all its child forms.
  * 
  * @author Jeff Tassin
  */
-public class PanelWriter {
+public class PanelWriter implements BasePanelWriter {
 	private CellConstraints m_default_cc = new CellConstraints();
 
 	public PanelWriter() {
 	}
 
+	/* (non-Javadoc)
+	 * @see com.jeta.swingbuilder.codegen.builder.BasePanelWriter#createPanel(com.jeta.swingbuilder.codegen.builder.DeclarationManager, com.jeta.forms.store.memento.FormMemento)
+	 */
+	@Override
 	public MethodWriter createPanel(DeclarationManager decl_mgr, FormMemento fm) {
+		boolean buildConstant = (Boolean) JETARegistry.lookup(SourceBuilder.BUILD_CONSTANT_SIZE);
+		if(buildConstant){
+			/** we need this to get the row/column count */
+			FormLayout formlayout = new FormLayout(FormSpecAdapter.fixupSpecs(fm.getColumnSpecs()), FormSpecAdapter.fixupSpecs(fm.getRowSpecs()));
+			boolean canLocation = true;
+			for (int i = 0; i < formlayout.getColumnCount(); i++) {
+				FormSpecAdapter fspec = new FormSpecAdapter(formlayout.getColumnSpec(i + 1));
+				if(fspec.isConstantSize() && "PX".equals(fspec.getConstantUnits())){
+					
+				}else{
+					canLocation = false;
+					break;
+				}
+			}
+			if(canLocation){
+				for (int i = 0; i < formlayout.getRowCount(); i++) {
+					FormSpecAdapter fspec = new FormSpecAdapter(formlayout.getRowSpec(i + 1));
+					if(fspec.isConstantSize() && "PX".equals(fspec.getConstantUnits())){
+						
+					}else{
+						canLocation = false;
+						break;
+					}
+				}
+			}
+			if(!canLocation) buildConstant = false;
+		}
+		
+		MethodWriter writer = null;
+		if(buildConstant){
+			writer = createPanelByLocation(decl_mgr, fm);
+		}else{
+			writer = createPanelByFormLayout(decl_mgr, fm);
+		}
+		return writer;
+	}
+	
+	private MethodWriter createPanelByLocation(DeclarationManager decl_mgr, FormMemento fm) {
 		decl_mgr.addImport("javax.swing.JPanel");
-		decl_mgr.addImport("com.jgoodies.forms.layout.CellConstraints");
-		decl_mgr.addImport("com.jgoodies.forms.layout.FormLayout");
-
+		decl_mgr.addImport("java.awt.Dimension");
+		
+		PropertyWriterFactory fac = (PropertyWriterFactory) JETARegistry.lookup(PropertyWriterFactory.COMPONENT_ID);
 		PropertiesMemento pm = fm.getPropertiesMemento();
 
 		MethodWriter method_writer = new MethodWriter(decl_mgr, null, getSuggestedMethodName(pm.getComponentName()));
-		BeanWriter form_bean_writer = new BeanWriter(method_writer, pm);
+		BaseBeanWriter form_bean_writer = fac.createBeanWriter();
+		form_bean_writer.createBeanSource(method_writer, fm);
+		method_writer.setReturnResult(form_bean_writer);
+		method_writer.addStatements(form_bean_writer.getStatements());
+
+		/** we need this to get the row/column count */
+		FormLayout formlayout = new FormLayout(FormSpecAdapter.fixupSpecs(fm.getColumnSpecs()), FormSpecAdapter.fixupSpecs(fm.getRowSpecs()));
+		int columnCount = formlayout.getColumnCount();
+		int rowCount = formlayout.getRowCount();
+		MyBound[][] bounds = new MyBound[columnCount][rowCount];
+		for (int i = 0; i < columnCount; i++) {
+			for (int j = 0; j < rowCount; j++) {
+				bounds[i][j] = new MyBound();
+			}
+		}
+
+		double x = 0, y = 0,cx = 0,cy = 0;
+		x = 0;
+		for (int i = 0; i < columnCount; i++) {
+			FormSpecAdapter cspec = new FormSpecAdapter(formlayout.getColumnSpec(i + 1));
+			cx = cspec.getConstantSize();
+			y = 0;
+			for (int j = 0; j < rowCount; j++) {
+				FormSpecAdapter rspec = new FormSpecAdapter(formlayout.getRowSpec(j + 1));
+				cy = rspec.getConstantSize();
+				bounds[i][j].x = x;
+				bounds[i][j].y = y;
+				bounds[i][j].w = cx;
+				bounds[i][j].h = cy;
+				y += cy;
+			}
+			x += cx;
+		}
+		cx = 0;
+		for (int i = 0; i < columnCount; i++) {
+			FormSpecAdapter cspec = new FormSpecAdapter(formlayout.getColumnSpec(i + 1));
+			cx += cspec.getConstantSize();
+		}
+		cy = 0;
+		for (int j = 0; j < rowCount; j++) {
+			FormSpecAdapter rspec = new FormSpecAdapter(formlayout.getRowSpec(j + 1));
+			cy += rspec.getConstantSize();
+		}
+		
+		StringBuffer sbPreferredSize = new StringBuffer();
+		sbPreferredSize.append("setPreferredSize(new Dimension(");
+		sbPreferredSize.append(String.valueOf((int)cx));
+		sbPreferredSize.append(",");
+		sbPreferredSize.append(String.valueOf((int)cx));
+		sbPreferredSize.append("));");
+		Block block = new Block();
+		block.addCode(sbPreferredSize.toString());
+		method_writer.addSegment(block);
+		
+		
+		/** add the panel declaration/ctor to the method */
+		MethodStatement ss = new MethodStatement(form_bean_writer.getBeanVariable(), "setLayout");
+		ss.addParameter(new BasicExpression("null"));
+		method_writer.addStatement(ss);
+
+		decl_mgr.addMethod(method_writer);
+
+		/** puts a newline between beans */
+		method_writer.addStatement(new BasicStatement(""));
+
+		HashMap row_cache = new HashMap();
+		HashMap col_cache = new HashMap();
+
+		Iterator iter = fm.iterator();
+		while (iter.hasNext()) {
+			ComponentMemento cm = (ComponentMemento) iter.next();
+			CellConstraintsMemento ccm = cm.getCellConstraintsMemento();
+			CellConstraints cc = ccm.createCellConstraints();
+
+			try {
+				if (cm instanceof FormMemento) {
+					FormMemento cfm = (FormMemento) cm;
+					MethodWriter subpanel = createPanel(method_writer, cfm);
+					MethodStatement ms = new MethodStatement(form_bean_writer.getBeanVariable(), "add");
+					String beanVariable = subpanel.getMethodName();
+					ms.addParameter(beanVariable);
+					method_writer.addStatement(ms);
+					method_writer.addStatement(createSetBoundsStatement(beanVariable, cc,bounds));
+				}
+				else if (cm instanceof BeanMemento) {
+					BeanMemento bm = (BeanMemento) cm;
+
+					if (bm.getBeanClass() == null) {
+						/** found an empty component */
+					}
+					else if (bm.getProperties() != null) {
+						String beanclass = bm.getBeanClass();
+						if (beanclass.indexOf("GridView") > 0 || beanclass.indexOf("JETALabel") > 0 || decl_mgr.isIncludeNonStandard()
+								|| beanclass.indexOf("com.jeta") < 0) {
+
+							BaseBeanWriter bw = fac.createBeanWriter(); 
+							bw.createBeanSource(method_writer, bm);
+							method_writer.addStatements(bw.getStatements());
+
+							MethodStatement ms = new MethodStatement(form_bean_writer.getBeanVariable(), "add");
+							String beanVariable = bw.getResultVariable();
+							ms.addParameter(beanVariable);
+							method_writer.addStatement(ms);
+							method_writer.addStatement(createSetBoundsStatement(beanVariable, cc,bounds));
+							/** puts a newline between beans */
+							method_writer.addStatement(new BasicStatement(""));
+
+						}
+
+					}
+				}
+				else {
+					assert (false);
+				}
+			} catch (Exception e) {
+
+			}
+		}
+
+		method_writer.addCommentLine("createPanel");
+		return method_writer;
+	}
+	
+	private MethodWriter createPanelByFormLayout(DeclarationManager decl_mgr, FormMemento fm) {
+		decl_mgr.addImport("javax.swing.JPanel");
+		decl_mgr.addImport("com.jeta.jgoodies.forms.layout.CellConstraints");
+		decl_mgr.addImport("com.jeta.jgoodies.forms.layout.FormLayout");
+		
+		BuilderUtils.buildFillMethod(decl_mgr);
+		
+		PropertyWriterFactory fac = (PropertyWriterFactory) JETARegistry.lookup(PropertyWriterFactory.COMPONENT_ID);
+		PropertiesMemento pm = fm.getPropertiesMemento();
+
+		MethodWriter method_writer = new MethodWriter(decl_mgr, null, getSuggestedMethodName(pm.getComponentName()));
+		BaseBeanWriter form_bean_writer = fac.createBeanWriter();
+		form_bean_writer.createBeanSource(method_writer, fm);
 		method_writer.setReturnResult(form_bean_writer);
 
-		LocalVariableDeclaration layout = new LocalVariableDeclaration(method_writer, com.jgoodies.forms.layout.FormLayout.class);
+		LocalVariableDeclaration layout = new LocalVariableDeclaration(method_writer, com.jeta.jgoodies.forms.layout.FormLayout.class);
 		layout.addParameter(new StringExpression(fm.getColumnSpecs()));
 		layout.addParameter(new StringExpression(fm.getRowSpecs()));
 
@@ -73,7 +251,7 @@ public class PanelWriter {
 		setGroups(method_writer, layout.getVariable(), fm, true);
 		setGroups(method_writer, layout.getVariable(), fm, false);
 
-		LocalVariableDeclaration ccvar = new LocalVariableDeclaration(method_writer, com.jgoodies.forms.layout.CellConstraints.class, "cc");
+		LocalVariableDeclaration ccvar = new LocalVariableDeclaration(method_writer, com.jeta.jgoodies.forms.layout.CellConstraints.class, "cc");
 		method_writer.addStatement(ccvar);
 
 		/** add the panel declaration/ctor to the method */
@@ -122,7 +300,8 @@ public class PanelWriter {
 						if (beanclass.indexOf("GridView") > 0 || beanclass.indexOf("JETALabel") > 0 || decl_mgr.isIncludeNonStandard()
 								|| beanclass.indexOf("com.jeta") < 0) {
 
-							BeanWriter bw = new BeanWriter(method_writer, bm.getProperties());
+							BaseBeanWriter bw = fac.createBeanWriter(); 
+							bw.createBeanSource(method_writer, bm);
 							method_writer.addStatements(bw.getStatements());
 
 							method_writer.addStatement(createAddComponentStatement(form_bean_writer.getBeanVariable(), bw.getResultVariable(), ccvar
@@ -277,6 +456,26 @@ public class PanelWriter {
 			}
 		}
 	}
+	
+	
+	private Statement createSetBoundsStatement(String beanVariable, CellConstraints cc,MyBound[][] bounds){
+		MethodStatement ms = new MethodStatement(beanVariable, "setBounds");
+		MyBound bound = new MyBound();
+		bound.x = bounds[cc.gridX - 1][cc.gridY - 1].x;
+		bound.y = bounds[cc.gridX - 1][cc.gridY - 1].y;
+		for(int i=0;i<cc.gridWidth;i++){
+			bound.w += bounds[cc.gridX - 1 + i][cc.gridY - 1].w;
+		}
+		for(int i=0;i<cc.gridHeight;i++){
+			bound.h += bounds[cc.gridX - 1][cc.gridY - 1 + i].h;
+		}
+		ms.addParameter(String.valueOf((int)bound.x));
+		ms.addParameter(String.valueOf((int)bound.y));
+		ms.addParameter(String.valueOf((int)bound.w));
+		ms.addParameter(String.valueOf((int)bound.h));
+		return ms;
+		
+	}
 
 	private static class FillMarker {
 		private BeanMemento m_memento;
@@ -312,4 +511,12 @@ public class PanelWriter {
 			return (m_memento == null || m_memento.getBeanClass() == null && (spec.getSize() == Sizes.DEFAULT || spec.getSize() == Sizes.PREFERRED));
 		}
 	}
+
+	class MyBound{
+		public double x = 0.0;
+		public double y = 0.0;
+		public double w = 0.0;
+		public double h = 0.0;
+	}
+
 }

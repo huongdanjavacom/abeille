@@ -18,12 +18,52 @@
 
 package com.jeta.swingbuilder.store;
 
+import java.awt.Component;
+import java.lang.reflect.Method;
+import java.util.Properties;
+
 import javax.swing.Icon;
 
 public interface RegisteredBean {
+	
+	public String getId();
+	
 	public String getDescription();
 
 	public String getClassName();
 
 	public Icon getIcon();
+	
+	public Class[] getCtorParams();
+	
+	public Object[] getCtorArgs();
+	
+	public Properties getCodeOnlyProperties();
+	
+	public Properties getInitializeProperties();
+	
+	public Properties getCustomProperties();
+	
+	public Method getInitializeMethod(String key);
+	
+	public Class getInitializeClass(String key);
+	
+	public boolean isScrollable();
+	
+	public String getFactory();
+	
+	public void setDescription(String description);
+	public void setClassName(String class_name);
+	public void setIcon(Icon icon);
+	public void setParams(Class[] params);
+	public void setArgs(Object[] args);
+	public void setCodeOnlyProperties(Properties codeOnly);
+	public void setInitlizeProperties(Properties initlize);
+	public void setCustomProperties(Properties custom);
+	public void setScrollable(boolean scrollable);
+	public void setFactory(String factory);
+	
+	public Component newComponent() throws Exception;
+	
+	
 }

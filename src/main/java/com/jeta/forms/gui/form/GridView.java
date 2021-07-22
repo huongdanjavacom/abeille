@@ -55,12 +55,12 @@ import com.jeta.forms.logger.FormsLogger;
 import com.jeta.forms.store.memento.FormGroupSet;
 import com.jeta.forms.store.properties.effects.PaintProperty;
 import com.jeta.forms.store.support.Matrix;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.registry.JETARegistry;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * The <code>GridViewBase</code> is responsible for containing the parent
@@ -151,13 +151,13 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 
 	/**
 	 * Defines the the column groups for this form See:
-	 * {@link com.jgoodies.forms.layout.FormLayout#.setColumnGroups}
+	 * {@link com.jeta.jgoodies.forms.layout.FormLayout#.setColumnGroups}
 	 */
 	private FormGroupSet m_col_groups = new FormGroupSet();
 
 	/**
 	 * Defines the row groups for this form. See:
-	 * {@link com.jgoodies.forms.layout.FormLayout#.setRowGroups}
+	 * {@link com.jeta.jgoodies.forms.layout.FormLayout#.setRowGroups}
 	 */
 	private FormGroupSet m_row_groups = new FormGroupSet();
 
@@ -272,6 +272,8 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 	 * performance.
 	 */
 	private GridComponent m_last_comp;
+	private String m_last_cmd;
+	private LinkedList m_mult_comps = new LinkedList();
 
 	/**
 	 * GridCellListener implementation. Here we are getting events from
@@ -279,15 +281,40 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 	 * forwarded up the chain as GridViewEvents.
 	 */
 	public void cellChanged(GridCellEvent evt) {
-		if (evt.getId() == GridCellEvent.EDIT_COMPONENT) {
-			fireGridEvent(new GridViewEvent(this, GridViewEvent.EDIT_COMPONENT, evt));
-		}
-		else if (evt.getId() == GridCellEvent.CELL_SELECTED) {
+		if (evt.getId() == GridCellEvent.CELL_SELECTED && GridCellEvent.COMPONENT_MULT_SELECTED.equals(evt.getCommand())){
 			fireGridEvent(new GridViewEvent(this, GridViewEvent.CELL_SELECTED, evt));
 			m_last_comp = (GridComponent) evt.getSource();
+			m_last_cmd = evt.getCommand();
+			if(m_mult_comps.contains(m_last_comp)){
+				m_mult_comps.remove(m_last_comp);
+				m_last_comp.setSelectedOnly(false);
+			}else{
+				m_mult_comps.add(m_last_comp);
+			}
+			Iterator iter = m_mult_comps.iterator();
+			while (iter.hasNext()) {
+				GridComponent gc = (GridComponent) iter.next();
+				gc.setSelectedOnly(true);
+			}
 		}
-		else {
-			fireGridEvent(new GridViewEvent(this, GridViewEvent.CELL_CHANGED, evt));
+		else{
+			if (evt.getId() == GridCellEvent.EDIT_COMPONENT) {
+				fireGridEvent(new GridViewEvent(this, GridViewEvent.EDIT_COMPONENT, evt));
+			}
+			else if (evt.getId() == GridCellEvent.CELL_SELECTED) {
+				fireGridEvent(new GridViewEvent(this, GridViewEvent.CELL_SELECTED, evt));
+				m_last_comp = (GridComponent) evt.getSource();
+				m_last_cmd = evt.getCommand();
+			}
+			else {
+				fireGridEvent(new GridViewEvent(this, GridViewEvent.CELL_CHANGED, evt));
+			}
+			Iterator iter = m_mult_comps.iterator();
+			while (iter.hasNext()) {
+				GridComponent gc = (GridComponent) iter.next();
+				gc.setSelectedOnly(false);
+			}
+			m_mult_comps.clear();
 		}
 	}
 
@@ -295,8 +322,24 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 	 * Deselects all grid components in the view
 	 */
 	public void deselectAll() {
-		if (m_last_comp != null)
-			m_last_comp.setSelected(false);
+		if(!GridCellEvent.COMPONENT_MULT_SELECTED.equals(m_last_cmd)){
+			if (m_last_comp != null)
+				m_last_comp.setSelected(false);
+			Iterator iter = m_mult_comps.iterator();
+			while (iter.hasNext()) {
+				GridComponent gc = (GridComponent) iter.next();
+				gc.setSelectedOnly(false);
+			}
+			m_mult_comps.clear();
+		}
+	}
+	
+	public void resetSelected(){
+		Iterator iter = m_mult_comps.iterator();
+		while (iter.hasNext()) {
+			GridComponent gc = (GridComponent) iter.next();
+			gc.setSelectedOnly(true);
+		}
 	}
 
 	/**
@@ -331,6 +374,13 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 			if (evt.getId() != GridViewEvent.EDIT_COMPONENT && evt.getId() != GridViewEvent.CELL_SELECTED) {
 				refreshView();
 			}
+			
+			if(evt.getComponentEvent() != null && GridCellEvent.COMPONENT_MULT_SELECTED.equals(evt.getComponentEvent().getCommand())){
+				evt.setGridComponentList(m_mult_comps);
+			}else{
+				evt.setGridComponentList(null);
+			}
+			
 
 			m_layoutinfo = null;
 			Iterator iter = m_listeners.iterator();
@@ -612,7 +662,7 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 	 * Return the FormLayout.LayoutInfo.
 	 * 
 	 * @return the FormLayout.LayoutInfo. See:
-	 *         {@link com.jgoodies.forms.layout.FormLayout.LayoutInfo }
+	 *         {@link com.jeta.jgoodies.forms.layout.FormLayout.LayoutInfo }
 	 */
 	FormLayout.LayoutInfo getLayoutInfo() {
 		/**
@@ -806,21 +856,24 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 	 *            the number of rows in the view
 	 */
 	public void initialize(int cols, int rows) {
-		enableEvents(FormUtils.isDesignMode());
 		StringBuffer colspec = new StringBuffer();
 		for (int col = 1; col <= cols; col++) {
 			if (col > 1)
 				colspec.append(",");
-			colspec.append("f:d:n");
+			colspec.append((col%2==0)?"f:90PX:n":"f:8PX:n");
 
 		}
 		StringBuffer rowspec = new StringBuffer();
 		for (int row = 1; row <= rows; row++) {
 			if (row > 1)
 				rowspec.append(",");
-			rowspec.append("c:d:n");
+			rowspec.append((row%2==0)?"f:23PX:n":"f:8PX:n");
 		}
 		initialize(colspec.toString(), rowspec.toString());
+	}
+	public void initialize(String colspec, String rowspec) {
+		enableEvents(FormUtils.isDesignMode());
+		initializeInternal(colspec, rowspec);
 		m_cell_painters = new Matrix(getRowCount(), getColumnCount());
 	}
 
@@ -832,7 +885,7 @@ public class GridView extends JETAPanel implements Paintable, FormAccessor, Grid
 	 * @param rowspecs
 	 *            the encoded row specs for the form layout
 	 */
-	void initialize(String colspecs, String rowspecs) {
+	void initializeInternal(String colspecs, String rowspecs) {
 		/**
 		 * This should not be needed since initialize should only be called
 		 * once. Just in case.

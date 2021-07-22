@@ -23,7 +23,8 @@ import java.lang.reflect.Method;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.FontProperty;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.forms.store.properties.FontProperty2;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.MethodExpression;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
@@ -35,16 +36,21 @@ public class FontPropertyWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			Method write = pd.getWriteMethod();
 			if (write != null) {
 				Font font = null;
-				if (value instanceof Font)
+				if (value instanceof Font){
 					font = (Font) value;
-				else if (value instanceof FontProperty)
+				}else if (value instanceof FontProperty){
 					font = ((FontProperty) value).getFont();
-
+				}else if (value instanceof FontProperty2){
+					font = ((FontProperty2) value).getValue();
+				}else{
+					System.out.println("error "+this.getClass().getSimpleName()+"::"+value.getClass().getName());
+					return;
+				}
 				if (font != null && write != null) {
 					declMgr.addImport("java.awt.Font");
 					MethodStatement ms = new MethodStatement(writer.getBeanVariable(), write.getName());

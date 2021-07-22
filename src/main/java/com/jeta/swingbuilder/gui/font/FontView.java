@@ -25,9 +25,9 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
 import com.jeta.forms.components.panel.FormPanel;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.swingbuilder.gui.components.IntegerDocument;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Panel that allows a user to select properties for a Font. This includes the

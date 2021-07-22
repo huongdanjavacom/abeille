@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,9 +37,7 @@ import com.jeta.forms.gui.form.StandardComponent;
 import com.jeta.forms.gui.formmgr.FormManager;
 import com.jeta.forms.gui.formmgr.FormManagerUtils;
 import com.jeta.forms.logger.FormsLogger;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.memento.FormMemento;
-import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.editor.DesignFormComponent;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
 import com.jeta.swingbuilder.gui.handler.FormCellHandler;
@@ -359,7 +358,7 @@ public abstract class AbstractFormManager implements FormManager {
 	/**
 	 * Opens the form from a file and puts it in the cache.
 	 */
-	protected FormComponent openForm(File file) throws FormException {
+	public FormComponent openForm(File file) throws FormException {
 		try {
 			FormComponent fc = findForm(file.getPath());
 			if (fc == null) {
@@ -370,11 +369,7 @@ public abstract class AbstractFormManager implements FormManager {
 				 * handle the case where the user may have copied the form to a
 				 * different location/filename
 				 */
-				ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-				String relpath = pmgr.getRelativePath(file.getPath());
-				if (relpath == null) {
-					relpath = file.getPath();
-				}
+				String relpath = file.getPath();
 
 				/**
 				 * The linked form may already be opened. So, let's use the
@@ -401,7 +396,29 @@ public abstract class AbstractFormManager implements FormManager {
 			}
 			return fc;
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println("Unable to load form: " + file.getPath());
+			FormsLogger.debug(e);
+			throw new FormException(e);
+		}
+	}
+	
+	public FormComponent openForm(InputStream is) throws FormException {
+		try {
+			FormMemento memento = FormManagerUtils.loadForm(is);
+			FormComponent fc = new DesignFormComponent();
+			fc.setState(memento);
+
+			// @JMT no need to reset id's because the embedded form id
+			// is
+			// derived from the hashCode of the form.
+			FormManagerDesignUtils.registerForms(this, fc);
+
+			installHandlers(m_compsrc, fc);
+			return fc;
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Unable to load form");
 			FormsLogger.debug(e);
 			throw new FormException(e);
 		}

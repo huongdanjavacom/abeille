@@ -42,7 +42,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
-import com.jgoodies.forms.layout.Sizes;
+import com.jeta.jgoodies.forms.layout.Sizes;
 
 /**
  * <code>TitledSeparator</code> is a component that can be used as a
@@ -52,7 +52,7 @@ import com.jgoodies.forms.layout.Sizes;
  * different parts of a GUI. It is derived from the JGoodies separator
  * component.
  * 
- * @see com.jgoodies.forms.factories.DefaultComponentFactory#createSeparator(String)
+ * @see com.jeta.jgoodies.forms.factories.DefaultComponentFactory#createSeparator(String)
  * 
  * @author Jeff Tassin
  */

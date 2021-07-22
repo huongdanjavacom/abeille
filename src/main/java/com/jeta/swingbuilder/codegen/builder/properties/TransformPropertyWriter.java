@@ -22,8 +22,8 @@ import java.lang.reflect.Method;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.TransformOptionsProperty;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.BasicExpression;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationHelper;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.Expression;
@@ -35,7 +35,7 @@ public class TransformPropertyWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			if (value instanceof TransformOptionsProperty) {
 				TransformOptionsProperty tprop = (TransformOptionsProperty) value;

@@ -90,6 +90,8 @@ public class Icons {
 	public static final String REDO_24 = "general/24x24/redo.png";
 	public static final String SAVE_24 = "general/24x24/save.png";
 	public static final String UNDO_24 = "general/24x24/undo.png";
+	public static final String CODE_24 = "general/24x24/code.png";
+	public static final String PROP_24 = "general/24x24/property.png";
 
 	// media
 	public static final String PLAY_24 = "media/24x24/play.png";
@@ -104,22 +106,36 @@ public class Icons {
 	public static final String ROW_16 = "table/16x16/row.png";
 	public static final String TABLE_16 = "table/16x16/table.png";
 
+
 	public static final String COLUMN_DECREASE_SPAN_24 = "table/24x24/column_decrease_span.png";
+	public static final String COLUMN_DECREASE_SPAN_LEFT_24 = "table/24x24/column_decrease_span_left.png";
 	public static final String COLUMN_DELETE_24 = "table/24x24/column_delete.png";
 	public static final String COLUMN_GROW_24 = "table/24x24/column_grow.png";
 	public static final String COLUMN_INCREASE_SPAN_24 = "table/24x24/column_increase_span.png";
+	public static final String COLUMN_INCREASE_SPAN_LEFT_24 = "table/24x24/column_increase_span_left.png";
 	public static final String COLUMN_INSERT_24 = "table/24x24/column_insert.png";
+	public static final String COLUMN_INSERT_RIGHT_24 = "table/24x24/column_insert_right.png";
 	public static final String COLUMN_NOGROW_24 = "table/24x24/column_nogrow.png";
 	public static final String COLUMN_SEP_LARGE_24 = "table/24x24/column_sep_large.png";
 	public static final String COLUMN_SEP_SMALL_24 = "table/24x24/column_sep_small.png";
 
 	public static final String ROW_DECREASE_SPAN_24 = "table/24x24/row_decrease_span.png";
+	public static final String ROW_DECREASE_SPAN_ABOVE_24 = "table/24x24/row_decrease_span_above.png";
 	public static final String ROW_DELETE_24 = "table/24x24/row_delete.png";
 	public static final String ROW_GROW_24 = "table/24x24/row_grow.png";
 	public static final String ROW_INCREASE_SPAN_24 = "table/24x24/row_increase_span.png";
+	public static final String ROW_INCREASE_SPAN_ABOVE_24 = "table/24x24/row_increase_span_above.png";
 	public static final String ROW_INSERT_24 = "table/24x24/row_insert.png";
+	public static final String ROW_INSERT_BELOW_24 = "table/24x24/row_insert_below.png";
 	public static final String ROW_NOGROW_24 = "table/24x24/row_nogrow.png";
 	public static final String ROW_SEP_LARGE_24 = "table/24x24/row_sep_large.png";
 	public static final String ROW_SEP_SMALL_24 = "table/24x24/row_sep_small.png";
+	
+	public static final String MOVE_LEFT_24 = "table/24x24/move_left.png";
+	public static final String MOVE_RIGHT_24 = "table/24x24/move_right.png";
+	public static final String MOVE_UP_24 = "table/24x24/move_up.png";
+	public static final String MOVE_DOWN_24 = "table/24x24/move_down.png";
+	public static final String DELE_COMP_24 = "table/24x24/delete_comp.png";
+
 
 }

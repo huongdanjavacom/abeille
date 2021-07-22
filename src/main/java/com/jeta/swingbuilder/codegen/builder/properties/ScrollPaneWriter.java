@@ -22,8 +22,8 @@ import javax.swing.JScrollPane;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.ScrollBarsProperty;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.BasicExpression;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.LocalVariableDeclaration;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
@@ -33,7 +33,7 @@ public class ScrollPaneWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			if (value instanceof ScrollBarsProperty) {
 				ScrollBarsProperty sbp = (ScrollBarsProperty) value;

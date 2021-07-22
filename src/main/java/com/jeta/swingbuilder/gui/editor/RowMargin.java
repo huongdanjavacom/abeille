@@ -37,6 +37,7 @@ import com.jeta.forms.gui.components.ComponentSource;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.i18n.I18N;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.open.resources.ResourceLoader;
@@ -44,8 +45,8 @@ import com.jeta.swingbuilder.gui.commands.CommandUtils;
 import com.jeta.swingbuilder.gui.commands.EditRowSpecCommand;
 import com.jeta.swingbuilder.gui.dnd.DesignerDragSource;
 import com.jeta.swingbuilder.gui.project.UserPreferencesNames;
+import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 import com.jeta.swingbuilder.interfaces.userprops.TSUserPropertiesUtils;
-import com.jgoodies.forms.layout.RowSpec;
 
 public class RowMargin extends Margin {
 	/**
@@ -80,8 +81,10 @@ public class RowMargin extends Margin {
 	 */
 	public RowMargin(FormComponent form, GridView topview, ComponentSource compSrc, JViewport viewport, boolean show) {
 		super(Orientation.VERTICAL, form, topview, compSrc, viewport, show);
-		addMouseListener(new MouseHandler());
-		addMouseMotionListener(new MouseMotionHandler());
+		if(!FormDesignerUtils.isFixed()){
+			addMouseListener(new MouseHandler());
+			addMouseMotionListener(new MouseMotionHandler());
+		}
 	}
 
 	@Override

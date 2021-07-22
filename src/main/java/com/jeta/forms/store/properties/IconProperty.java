@@ -38,10 +38,10 @@ import javax.swing.ImageIcon;
 
 import com.jeta.forms.gui.beans.JETABean;
 import com.jeta.forms.gui.common.FormUtils;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.JETAObjectInput;
 import com.jeta.forms.store.JETAObjectOutput;
 import com.jeta.open.registry.JETARegistry;
+import com.jeta.open.resources.ResourceLoader;
 
 /**
  * A class for handling handling icon properties in a Java bean. All icons are
@@ -155,9 +155,9 @@ public class IconProperty extends JETAProperty implements Icon {
 	 */
 	public void loadImage() {
 		try {
-			ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-			if (pmgr != null && m_path != null && m_path.length() > 0) {
-				m_image = pmgr.loadImage(m_path);
+			ResourceLoader loader = (ResourceLoader) JETARegistry.lookup(ResourceLoader.COMPONENT_ID);
+			if (loader != null && m_path != null && m_path.length() > 0) {
+				m_image = loader.loadImage(m_path);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

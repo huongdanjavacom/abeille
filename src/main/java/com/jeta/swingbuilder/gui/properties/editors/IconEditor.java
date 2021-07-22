@@ -26,11 +26,10 @@ import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.properties.IconProperty;
 import com.jeta.open.i18n.I18N;
-import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.filechooser.FileChooserConfig;
 import com.jeta.swingbuilder.gui.filechooser.TSFileChooserFactory;
 import com.jeta.swingbuilder.gui.filechooser.TSFileFilter;
@@ -68,21 +67,7 @@ public class IconEditor extends JETAPropertyEditor {
 		File f = TSFileChooserFactory.showOpenDialog(fcc);
 		if (f != null) {
 			try {
-
-				ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-				/**
-				 * check if the path is contained in a valid package for the
-				 * project
-				 */
-				// @todo fix to allow embedded images from anywhere
-				if (!pmgr.isValidAbsolutePath(f.getPath())) {
-					String msg = I18N.getLocalizedMessage("Selected image is not in source path.");
-					String title = I18N.getLocalizedMessage("Error");
-					JOptionPane.showMessageDialog(comp, msg, title, JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-
-				String relativepath = pmgr.getRelativePath(f.getPath());
+				String relativepath = f.getPath();
 				IconProperty iprop = new IconProperty();
 				iprop.setValue((IconProperty) getValue());
 				iprop.setRelativePath(relativepath);
@@ -109,6 +94,9 @@ public class IconEditor extends JETAPropertyEditor {
 	 */
 	public void paintValue(Graphics g, Rectangle rect) {
 		// forward the call to the value painter
+		if(isCustom() && !isEnabled() ){
+			g.setColor(UIManager.getColor("Label.disabledForeground"));
+		}
 		m_value_painter.paintValue(g, rect);
 	}
 

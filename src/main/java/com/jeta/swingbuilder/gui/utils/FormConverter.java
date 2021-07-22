@@ -23,7 +23,6 @@ import com.jeta.forms.store.memento.StateRequest;
 import com.jeta.forms.store.xml.writer.XMLWriter;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.common.ComponentNames;
-import com.jeta.swingbuilder.gui.project.UserPreferencesNames;
 import com.jeta.swingbuilder.main.AbeilleForms;
 
 /**
@@ -49,7 +48,6 @@ public class FormConverter {
 	 *            /home/jeff/abeille/myproject.jfpr
 	 */
 	public FormConverter(String projectFile) {
-		JETARegistry.rebind(UserPreferencesNames.ID_LAST_PROJECT, projectFile);
 	}
 
 	/**

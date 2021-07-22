@@ -45,11 +45,11 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import com.jeta.forms.store.properties.ColorProperty;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
 import com.jeta.open.gui.framework.JETADialog;
 import com.jeta.open.gui.utils.JETAToolbox;
 import com.jeta.open.i18n.I18N;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * A view that allows the user to select a color that is either constant or

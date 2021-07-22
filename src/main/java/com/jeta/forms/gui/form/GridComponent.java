@@ -473,6 +473,18 @@ abstract public class GridComponent extends JPanel {
 			fireGridCellEvent(new GridCellEvent(GridCellEvent.CELL_SELECTED, this));
 		}
 	}
+	public void setSelectedOnly(boolean sel) {
+		boolean old_sel = m_selected;
+		m_selected = sel;
+		if (sel != old_sel) {
+			if (getParentView() == null) {
+
+			}
+			else {
+				getParentView().getOverlay().repaint(this);
+			}
+		}
+	}
 
 	/**
 	 * Returns the keyboard handler associated with this component. Handlers are

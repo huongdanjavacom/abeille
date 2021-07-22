@@ -44,6 +44,16 @@ public class JMLObjectOutput implements JETAObjectOutput {
 		}
 
 	}
+	public void writeString(String tagName, String sval) throws IOException {
+		try {
+			if (sval != null)
+				m_objnode.appendChild(JMLUtils.createPropertyNode(m_document, tagName, sval));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new IOException(e.getMessage());
+		}
+
+	}
 
 	public void writeBoolean(String tagName, boolean bval) throws IOException {
 		try {
@@ -110,6 +120,39 @@ public class JMLObjectOutput implements JETAObjectOutput {
 	public void writeFloat(String string, float value, float defaultValue) throws IOException {
 		if (value != defaultValue)
 			writeFloat(string, value);
+	}
+
+	
+	
+	public void writeDouble(String tagName, double value) throws IOException {
+		try {
+			m_objnode.appendChild(JMLUtils.createPropertyNode(m_document, tagName, String.valueOf(value)));
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	
+	public void writeDouble(String string, double value, double defaultValue)
+			throws IOException {
+		if (value != defaultValue)
+			writeDouble(string, value);
+	}
+
+	
+	public void writeLong(String tagName, long value) throws IOException {
+		try {
+			m_objnode.appendChild(JMLUtils.createPropertyNode(m_document, tagName, String.valueOf(value)));
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	
+	public void writeLong(String string, long value, long defaultValue)
+			throws IOException {
+		if (value != defaultValue)
+			writeLong(string, value);
 	}
 
 }

@@ -29,6 +29,8 @@
 
 package com.jeta.forms.gui.form;
 
+import java.util.LinkedList;
+
 /**
  * A <code>GridViewEvent</code> is fired by a GridView when the view changes
  * or one of its components changes. This event is only required in design mode.
@@ -43,6 +45,11 @@ public class GridViewEvent {
 	 */
 	private GridView m_source;
 
+	/**
+	 * GridComponent list for mult selected
+	 */
+	private LinkedList m_gclist;
+	
 	/**
 	 * If the GridViewEvent was triggered by one of its child components.
 	 */
@@ -109,6 +116,14 @@ public class GridViewEvent {
 	public GridView getSource() {
 		return m_source;
 	}
+	public LinkedList getGridComponentList() {
+		return m_gclist;
+	}
+
+	public void setGridComponentList(LinkedList gclist) {
+		this.m_gclist = gclist;
+	}
+	
 
 	public void print() {
 		String sid = "UNKNOWN";

@@ -24,7 +24,8 @@ import java.util.Iterator;
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.TabProperty;
 import com.jeta.forms.store.properties.TabbedPaneProperties;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
+import com.jeta.swingbuilder.codegen.builder.BasePanelWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.IconExpression;
 import com.jeta.swingbuilder.codegen.builder.MethodExpression;
@@ -38,7 +39,7 @@ public class TabbedPanePropertyWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			if (value instanceof TabbedPaneProperties) {
 				TabbedPaneProperties tpp = (TabbedPaneProperties) value;
@@ -49,7 +50,7 @@ public class TabbedPanePropertyWriter implements PropertyWriter {
 					MethodStatement ss = new MethodStatement(writer.getBeanVariable(), "addTab");
 					ss.addParameter(new StringExpression(tp.getTitle()));
 					ss.addParameter(new IconExpression(declMgr, tp.getIconProperty()));
-					PanelWriter pw = new PanelWriter();
+					BasePanelWriter pw = new PanelWriter();
 					MethodWriter mw = pw.createPanel(declMgr, tp.getFormMemento());
 					ss.addParameter(new MethodExpression(mw.getMethodName()));
 					writer.addStatement(ss);

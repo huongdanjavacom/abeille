@@ -22,6 +22,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
+import javax.swing.UIManager;
+
 import com.jeta.forms.store.properties.CompoundLineProperty;
 import com.jeta.open.gui.framework.JETADialog;
 import com.jeta.open.gui.utils.JETAToolbox;
@@ -75,6 +77,9 @@ public class LineEditor extends JETAPropertyEditor {
 	 */
 	public void paintValue(Graphics g, Rectangle rect) {
 		// forward the call to the value painter
+		if(isCustom() && !isEnabled() ){
+			g.setColor(UIManager.getColor("Label.disabledForeground"));
+		}
 		m_value_painter.paintValue(g, rect);
 	}
 

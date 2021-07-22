@@ -73,7 +73,7 @@ public class FormMemento extends ComponentMemento {
 	/**
 	 * The version of this class.
 	 */
-	public static final int VERSION = 5;
+	public static final int VERSION = 6;
 
 	/**
 	 * The encoded row specifications used in the FormLayout for this form.
@@ -115,14 +115,14 @@ public class FormMemento extends ComponentMemento {
 	/**
 	 * The row group assignments for the form.
 	 * 
-	 * @see com.jgoodies.forms.layout.FormLayout#setRowGroups(int[][])
+	 * @see com.jeta.jgoodies.forms.layout.FormLayout#setRowGroups(int[][])
 	 */
 	private FormGroupSet m_row_groups;
 
 	/**
 	 * The column group assignments for the form.
 	 * 
-	 * @see com.jgoodies.forms.layout.FormLayout#setColumnGroups(int[][])
+	 * @see com.jeta.jgoodies.forms.layout.FormLayout#setColumnGroups(int[][])
 	 */
 	private FormGroupSet m_column_groups;
 
@@ -141,6 +141,11 @@ public class FormMemento extends ComponentMemento {
 	 *             instead.
 	 */
 	private HashMap m_properties = new HashMap();
+	
+	/**
+	 * code build properties
+	 */
+	private FormCodeModel m_codeModel = new FormCodeModel();
 
 	/**
 	 * Adds a child component's state to the list of states owned by this
@@ -262,6 +267,13 @@ public class FormMemento extends ComponentMemento {
 		return m_components.iterator();
 	}
 
+	public FormCodeModel getCodeModel(){
+		return m_codeModel;
+	}
+	public void setCodeModel(FormCodeModel codeModel ){
+		m_codeModel = codeModel;
+	}
+	
 	/**
 	 * Used for testing
 	 */
@@ -292,7 +304,7 @@ public class FormMemento extends ComponentMemento {
 	 * 
 	 * @param colgrps
 	 *            the column groups
-	 * @see com.jgoodies.forms.layout.FormLayout#setColumnGroups(int[][])
+	 * @see com.jeta.jgoodies.forms.layout.FormLayout#setColumnGroups(int[][])
 	 */
 	public void setColumnGroups(FormGroupSet colgrps) {
 		m_column_groups = colgrps;
@@ -346,7 +358,7 @@ public class FormMemento extends ComponentMemento {
 	 * 
 	 * @param rowgrps
 	 *            the row groups to set
-	 * @see com.jgoodies.forms.layout.FormLayout#setRowGroups(int[][])
+	 * @see com.jeta.jgoodies.forms.layout.FormLayout#setRowGroups(int[][])
 	 */
 	public void setRowGroups(FormGroupSet rowgrps) {
 		m_row_groups = rowgrps;
@@ -426,6 +438,9 @@ public class FormMemento extends ComponentMemento {
 			m_row_groups = (FormGroupSet) in.readObject("rowgroups");
 			m_column_groups = (FormGroupSet) in.readObject("colgroups");
 		}
+		if (version >= 6) {
+			m_codeModel = (FormCodeModel) in.readObject("codemodel");
+		}
 	}
 
 	/**
@@ -444,5 +459,7 @@ public class FormMemento extends ComponentMemento {
 		out.writeObject("focuspolicy", m_focus_policy);
 		out.writeObject("rowgroups", m_row_groups);
 		out.writeObject("colgroups", m_column_groups);
+		out.writeObject("codemodel", m_codeModel);
+		
 	}
 }

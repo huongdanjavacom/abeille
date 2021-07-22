@@ -29,6 +29,8 @@
 
 package com.jeta.forms.gui.form;
 
+import java.util.LinkedList;
+
 /**
  * A <code>GridCellEvent</code> gets fired when a GridComponent changes or is
  * selected. The GridComponent is responsible for firing the event. This event
@@ -48,6 +50,7 @@ public class GridCellEvent {
 	 * common commands
 	 */
 	public static final String COMPONENT_NAME_CHANGED = "component.name.changed";
+	public static final String COMPONENT_MULT_SELECTED = "component.mult.selected";
 
 	/**
 	 * The id for the event
@@ -117,4 +120,8 @@ public class GridCellEvent {
 	void setSource(GridComponent src) {
 		m_source = src;
 	}
+
+
+	
+	
 }

@@ -30,11 +30,11 @@ import com.jeta.forms.gui.components.ComponentSource;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.dnd.DesignerDragSource;
 import com.jeta.swingbuilder.gui.utils.Units;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
 
 public abstract class Margin extends JComponent implements DesignerDragSource {
 	static final int THUMB_WIDTH = 16;

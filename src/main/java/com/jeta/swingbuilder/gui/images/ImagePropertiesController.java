@@ -26,10 +26,8 @@ import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.open.gui.framework.JETAController;
 import com.jeta.open.i18n.I18N;
-import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.filechooser.FileChooserConfig;
 import com.jeta.swingbuilder.gui.filechooser.TSFileChooserFactory;
 import com.jeta.swingbuilder.gui.filechooser.TSFileFilter;
@@ -65,19 +63,6 @@ public class ImagePropertiesController extends JETAController {
 			if (f != null) {
 				try {
 
-					ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-					/**
-					 * check if the path is contained in a valid package for the
-					 * project
-					 */
-					// @todo fix to allow embedded images from anywhere
-					if (!pmgr.isValidAbsolutePath(f.getPath())) {
-						String msg = I18N.getLocalizedMessage("Selected image is not in source path.");
-						String title = I18N.getLocalizedMessage("Error");
-						JOptionPane.showMessageDialog(m_view, msg, title, JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-
 					/**
 					 * The toolkit should be used to create the image, otherwise
 					 * it may be pulled from the toolkit image cache.
@@ -85,7 +70,7 @@ public class ImagePropertiesController extends JETAController {
 					Toolkit toolkit = Toolkit.getDefaultToolkit();
 					ImageIcon image = new ImageIcon(toolkit.createImage(f.getPath()));
 					m_view.setImage(image);
-					m_view.setText(ImagePropertiesNames.ID_FILE_FIELD, pmgr.getRelativePath(f.getPath()));
+					m_view.setText(ImagePropertiesNames.ID_FILE_FIELD, f.getPath());
 					m_view.setText(ImagePropertiesNames.ID_DESCRIPTION_FIELD, f.getName());
 				} catch (Exception e) {
 					String msg = I18N.getLocalizedMessage("Unable to load image.");

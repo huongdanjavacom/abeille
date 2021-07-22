@@ -38,11 +38,11 @@ import com.jeta.forms.components.panel.FormPanel;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
-import com.jgoodies.forms.layout.FormSpec.DefaultAlignment;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.FormSpec.DefaultAlignment;
 
 /**
  * Provides some convenience behavior for flipping sides in column

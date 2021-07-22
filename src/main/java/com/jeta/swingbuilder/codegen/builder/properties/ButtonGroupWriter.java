@@ -20,7 +20,7 @@ package com.jeta.swingbuilder.codegen.builder.properties;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.ButtonGroupProperty;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.MemberVariableDeclaration;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
@@ -32,7 +32,7 @@ public class ButtonGroupWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			if (value instanceof ButtonGroupProperty) {
 				declMgr.addImport("javax.swing.ButtonGroup");
@@ -46,7 +46,7 @@ public class ButtonGroupWriter implements PropertyWriter {
 						if (varname.length() == 1)
 							varname = "buttongroup" + varname;
 
-						vd = new MemberVariableDeclaration(declMgr, javax.swing.ButtonGroup.class, varname);
+						vd = new MemberVariableDeclaration(declMgr, javax.swing.ButtonGroup.class,varname, true);
 						declMgr.addMemberVariable(vd);
 						declMgr.put("buttongroup." + groupname, vd);
 					}

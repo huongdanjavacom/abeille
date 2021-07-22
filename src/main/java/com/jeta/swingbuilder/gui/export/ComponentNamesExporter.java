@@ -100,7 +100,7 @@ public class ComponentNamesExporter {
 			decorator = decorator.replaceAll("\\" + FORM_PATH, "???");
 			decorator = decorator.replaceAll("\\" + FORM_NAME, "???");
 		} else {
-			decorator = decorator.replaceAll("\\" + FORM_PATH, f.getAbsolutePath());
+			decorator = decorator.replaceAll("\\" + FORM_PATH, f.getAbsolutePath().replace('\\', '/'));
 			decorator = decorator.replaceAll("\\" + FORM_NAME, f.getName().substring(0, f.getName().lastIndexOf('.')));
 		}
 		if (comp instanceof GridView)
@@ -120,7 +120,7 @@ public class ComponentNamesExporter {
 			return null;
 		File f = new File(form.getAbsolutePath());
 		String decorator = new String(part);
-		decorator = decorator.replaceAll("\\" + FORM_PATH, f.getAbsolutePath());
+		decorator = decorator.replaceAll("\\" + FORM_PATH, f.getAbsolutePath().replace('\\', '/'));
 		decorator = decorator.replaceAll("\\" + FORM_NAME, f.getName().substring(0, f.getName().lastIndexOf('.')));
 		return decorator;
 	}
@@ -137,6 +137,7 @@ public class ComponentNamesExporter {
 	 */
 	public void exportToClipboard(FormComponent fc) {
 		String result = export(fc);
+		System.out.println(result);
 		try {
 			Toolkit kit = Toolkit.getDefaultToolkit();
 			Clipboard clipboard = kit.getSystemClipboard();

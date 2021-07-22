@@ -28,10 +28,10 @@ import com.jeta.forms.gui.effects.ImagePainter;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.store.properties.ImageProperty;
 import com.jeta.forms.store.properties.effects.PaintProperty;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.swingbuilder.gui.images.ImagePropertiesView;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * @author Jeff Tassin

@@ -83,7 +83,8 @@ public class JMLUtils {
 			if (serializer == null) {
 				System.out.println("    xmlutils.createPropertyNode failed   propName: " + propName + "  value: "
 						+ (pvalue == null ? "NULL" : pvalue.getClass().getName()));
-				System.exit(0);
+				//System.exit(0);
+				return e;
 			}
 			e.appendChild(serializer.serialize(document, pvalue));
 			if (serializer instanceof InlineJMLSerializer)

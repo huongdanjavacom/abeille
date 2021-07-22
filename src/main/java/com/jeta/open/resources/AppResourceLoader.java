@@ -147,7 +147,7 @@ public class AppResourceLoader implements ResourceLoader {
 	 */
 	@Override
     public ImageIcon loadImage(String imageName) {
-	    //TODO Temporary solution
+	    // TODO Temporary solution
 	    if (imageName.contains("jeta.resources/")) {
 	        imageName = imageName.replace("jeta.resources/", "");
 	    }

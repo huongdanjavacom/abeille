@@ -21,11 +21,11 @@ package com.jeta.swingbuilder.codegen.builder;
 public class LocalVariableDeclaration extends VariableDeclaration {
 
 	public LocalVariableDeclaration(DeclarationManager declMgr, Class varClass) {
-		super(declMgr, varClass, null, true);
+		super(declMgr, varClass, null, true,true);
 	}
 
 	public LocalVariableDeclaration(DeclarationManager declMgr, Class varClass, String varName) {
-		super(declMgr, varClass, varName, true);
+		super(declMgr, varClass, varName, true,true);
 	}
 
 	public LocalVariableDeclaration(DeclarationManager declMgr, Class varClass, String varName, String initializer) {

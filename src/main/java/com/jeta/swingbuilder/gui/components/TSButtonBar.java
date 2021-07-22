@@ -71,6 +71,16 @@ public class TSButtonBar extends JETAPanel {
 	private LinkedList m_listeners = new LinkedList();
 
 	private float FACTOR = 0.8f;
+	
+	/**
+	 * show caption if one view
+	 */ 
+	private boolean singleCaption = false;
+	
+	public TSButtonBar(boolean singleCaption) {
+		this();
+		this.singleCaption = singleCaption;
+	}
 
 	/**
 	 * ctor
@@ -88,6 +98,11 @@ public class TSButtonBar extends JETAPanel {
 		m_listeners.add(listener);
 	}
 
+	public void clear(){
+		m_views.clear();
+		m_currentview = null;
+	}
+	
 	/**
 	 * Adds a view to the bar.
 	 * 
@@ -227,18 +242,31 @@ public class TSButtonBar extends JETAPanel {
 			m_currentview.getButton().setBackground(m_selected_color);
 			m_currentview.getButton().setBorder(m_selected_border);
 
-			if (m_views.size() > 1) {
-				JPanel panel = new JPanel(new GridLayout(m_views.size(), 1));
+			if (m_views.size() > 1 || this.singleCaption) {
+				JPanel panelN = new JPanel();
+				JPanel panelS = new JPanel(new GridLayout(m_views.size(), 1));
+				boolean NS = true;
+				int sizeN = 0,sizeS = 0;
 				Iterator iter = m_views.iterator();
 				while (iter.hasNext()) {
 					ButtonBarView view = (ButtonBarView) iter.next();
-					panel.add(view.getButton());
+					if(NS){
+						sizeN ++;
+						panelN.add(view.getButton());
+					}else{
+						sizeS++;
+						panelS.add(view.getButton());
+					}
 					if (view != m_currentview) {
 						view.getButton().setBackground(UIManager.getColor("control"));
 						view.getButton().setBorder(m_unselected_border);
 					}
+					if (view == m_currentview) NS = false;
 				}
-				add(panel, BorderLayout.NORTH);
+				panelN.setLayout(new GridLayout(sizeN, 1));
+				panelS.setLayout(new GridLayout(sizeS, 1));
+				add(panelN, BorderLayout.NORTH);
+				add(panelS, BorderLayout.SOUTH);
 			}
 		}
 
@@ -293,15 +321,26 @@ public class TSButtonBar extends JETAPanel {
 			add(m_currentview.getButton(), BorderLayout.NORTH);
 			add(m_currentview.getView(), BorderLayout.CENTER);
 			if (m_views.size() > 1) {
-				JPanel panel = new JPanel(new GridLayout(m_views.size() - 1, 1));
+				JPanel panelN = new JPanel();
+				JPanel panelS = new JPanel(new GridLayout(m_views.size(), 1));
+				boolean NS = true;
+				int sizeN = 0,sizeS = 0;
 				Iterator iter = m_views.iterator();
 				while (iter.hasNext()) {
 					ButtonBarView view = (ButtonBarView) iter.next();
-					if (view != m_currentview) {
-						panel.add(view.getButton());
+					if(NS){
+						sizeN ++;
+						panelN.add(view.getButton());
+					}else{
+						sizeS++;
+						panelS.add(view.getButton());
 					}
+					if (view == m_currentview) NS = false;
 				}
-				add(panel, BorderLayout.SOUTH);
+				panelN.setLayout(new GridLayout(sizeN, 1));
+				panelS.setLayout(new GridLayout(sizeS, 1));
+				add(panelN, BorderLayout.NORTH);
+				add(panelS, BorderLayout.SOUTH);
 			}
 		}
 

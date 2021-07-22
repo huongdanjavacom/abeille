@@ -31,6 +31,7 @@ package com.jeta.forms.gui.formmgr;
 
 import java.awt.Container;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collection;
 
 import com.jeta.forms.gui.common.FormException;
@@ -105,6 +106,13 @@ public interface FormManager {
 	 */
 	void openEmbeddedForm(FormComponent comp);
 
+	/**
+	 * 
+	 * @param is
+	 * @return
+	 * @throws FormException
+	 */
+	public FormComponent openForm(InputStream is) throws FormException ;
 	/**
 	 * @return true if the given form is opened in a top level editor.
 	 */

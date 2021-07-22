@@ -55,4 +55,26 @@ public class JavaExternalizableObjectInput implements JETAObjectInput {
 		return readBoolean(tagName);
 	}
 
+	
+	
+	public double readDouble(String tagName) throws IOException {
+		return m_in.readDouble();
+	}
+
+	
+	public double readDouble(String tagName, double defaultValue)
+			throws IOException {
+		return m_in.readDouble();
+	}
+
+	
+	public long readLong(String tagName) throws IOException {
+		return m_in.readLong();
+	}
+
+	
+	public long readLong(String tagName, long defaultValue) throws IOException {
+		return m_in.readLong();
+	}
+
 }

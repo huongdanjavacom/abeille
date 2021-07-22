@@ -36,7 +36,7 @@ public class MethodWriter implements DeclarationManager {
 	 * The BeanWriter associated with this return value of this method
 	 * declaration
 	 */
-	private BeanWriter m_return_result;
+	private BaseBeanWriter m_return_result;
 
 	/**
 	 * The parameters for this method
@@ -55,11 +55,11 @@ public class MethodWriter implements DeclarationManager {
 	private LinkedList m_comments;
 
 	private String m_access = "public";
-
+	
 	/**
 	 * Defines a method with no parameters.
 	 */
-	public MethodWriter(DeclarationManager declMgr, BeanWriter beanWriter, String suggestedName) {
+	public MethodWriter(DeclarationManager declMgr, BaseBeanWriter beanWriter, String suggestedName) {
 		m_class_decl_mgr = declMgr;
 		m_return_result = beanWriter;
 		m_method_name = createMethodName(suggestedName);
@@ -194,7 +194,7 @@ public class MethodWriter implements DeclarationManager {
 		m_access = access;
 	}
 
-	public void setReturnResult(BeanWriter result) {
+	public void setReturnResult(BaseBeanWriter result) {
 		m_return_result = result;
 	}
 

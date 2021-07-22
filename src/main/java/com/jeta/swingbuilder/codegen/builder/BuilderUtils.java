@@ -18,9 +18,28 @@
 
 package com.jeta.swingbuilder.codegen.builder;
 
+import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import com.jeta.forms.components.SwingComponentBindingListener;
+import com.jeta.forms.components.SwingComponentBindingSupport;
+import com.jeta.forms.store.memento.BeanMemento;
+import com.jeta.forms.store.memento.ComponentMemento;
+import com.jeta.forms.store.memento.FormMemento;
+import com.jeta.forms.store.memento.PropertiesMemento;
 import com.jeta.open.i18n.I18NUtils;
+import com.jeta.open.registry.JETARegistry;
 
 public class BuilderUtils {
+	public static final String PROP_TABORDER = "taborder@Integer";
+	public static final String PROP_BINDING = "binding@String";
 
 	/**
 	 * Builds the constructor
@@ -38,8 +57,7 @@ public class BuilderUtils {
 		method_writer.addCommentLine("Default constructor");
 
 		Block block = new Block();
-		String frame_code = "initializePanel();";
-		block.addCode(frame_code);
+		block.addCode("initializePanel();");
 		method_writer.addSegment(block);
 		declMgr.addMethod(method_writer);
 	}
@@ -56,10 +74,23 @@ public class BuilderUtils {
 
 		Block block = new Block();
 		String frame_code = "setLayout(new BorderLayout());" + "add(" + methodExpression + ", BorderLayout.CENTER);";
-
 		block.addCode(frame_code);
 		method_writer.addSegment(block);
+		
+		Block taborders = buildTabOrder((ClassDeclarationManager)declMgr);
+		if(taborders != null){
+			method_writer.addSegment(taborders);
+		}
+		
+		if(BuilderUtils.buildBinding((ClassDeclarationManager)declMgr)){
+			block = new Block();
+			block.addCode("initializeBindings();");
+			method_writer.addSegment(block);
+		}
+
+		
 		declMgr.addMethod(method_writer);
+		
 	}
 
 	/**
@@ -169,7 +200,7 @@ public class BuilderUtils {
 		};
 
 		declMgr.addImport("java.awt.ComponentOrientation");
-		declMgr.addImport("com.jeta.open.i18n.I18NUtils");
+		//declMgr.addImport("com.jeta.open.i18n.I18NUtils");
 
 		method_writer.addCommentLine("Method for recalculating the component orientation for ");
 		method_writer.addCommentLine("right-to-left Locales.");
@@ -185,4 +216,139 @@ public class BuilderUtils {
 		method_writer.addSegment(block);
 		declMgr.addMethod(method_writer);
 	}
+	
+	public static Block buildTabOrder(ClassDeclarationManager declMgr) {
+		Map<String,Integer> taborders = new HashMap<String,Integer>();
+		Collection fields = declMgr.getFields();
+		Iterator iter = fields.iterator();
+		while (iter.hasNext()) {
+			MemberVariableDeclaration field = (MemberVariableDeclaration) iter.next();
+			ComponentMemento cm = field.getMemento();
+			if(cm != null){
+				PropertiesMemento pm = null;
+				if(cm instanceof FormMemento )
+					pm = ((FormMemento)cm).getPropertiesMemento();
+				else
+					pm = ((BeanMemento)cm).getProperties();
+				if(pm.containsProperty(PROP_TABORDER)){
+					Object value = pm.getPropertyValueEx(PROP_TABORDER);
+					if(value instanceof Integer){
+						Integer nvalue = (Integer)value;
+						taborders.put(field.getVariable(),nvalue);
+					}
+				}
+			}
+		}
+		if(taborders.size() == 0) return null;
+		declMgr.addImport("com.jeta.forms.components.FocusTraversalOnArray");
+		declMgr.addImport("java.awt.Component");
+		
+		
+		List<Map.Entry<String,Integer>> taborders1 =  new ArrayList<Map.Entry<String,Integer>>(taborders.entrySet()); 
+		Collections.sort(taborders1, new Comparator<Map.Entry<String,Integer>>(){ 
+			public int compare(Map.Entry<String,Integer> obj1,Map.Entry<String,Integer> obj2){ 
+				return obj1.getValue().compareTo(obj2.getValue()); 
+			} 
+			});
+		
+		
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append("this.setFocusTraversalPolicyProvider(true);");
+		sb.append("this.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{");
+		int count = taborders.keySet().size();
+		int index = 0;
+		for(Map.Entry<String,Integer> obj:taborders1){ 
+			sb.append(obj.getKey());
+			index ++;
+			if(index < count) sb.append(",");
+		} 
+		sb.append("\n}));");
+		Block block = new Block();
+		block.addCode(sb.toString());
+		
+		return block;
+	}
+
+	public static boolean buildBinding(ClassDeclarationManager declMgr) {
+		Map<String,String> bindings = new HashMap<String,String>();
+		Collection fields = declMgr.getFields();
+		Iterator iter = fields.iterator();
+		while (iter.hasNext()) {
+			MemberVariableDeclaration field = (MemberVariableDeclaration) iter.next();
+			ComponentMemento cm = field.getMemento();
+			if(cm != null){
+				PropertiesMemento pm = null;
+				if(cm instanceof FormMemento )
+					pm = ((FormMemento)cm).getPropertiesMemento();
+				else
+					pm = ((BeanMemento)cm).getProperties();
+				if(pm.containsProperty(PROP_BINDING)){
+					Object value = pm.getPropertyValueEx(PROP_BINDING);
+					if(value instanceof String){
+						String svalue = (String)value;
+						bindings.put(field.getVariable(),svalue);
+					}
+				}
+			}
+		}
+		boolean buildIncBinding = (Boolean) JETARegistry.lookup(SourceBuilder.BUILD_INCLUDE_BINDING);
+		if(bindings.size() == 0 && !buildIncBinding){
+			return false;
+		}
+		declMgr.addImport("com.jeta.forms.components.SwingComponentBindingSupport");
+		declMgr.addImport("com.jeta.forms.components.SwingComponentBindingListener");
+		declMgr.addImport("java.awt.Component");
+		
+		VariableDeclaration ds = new MemberVariableDeclaration(declMgr, SwingComponentBindingSupport.class,true);
+		declMgr.addMemberVariable(ds);
+		
+		MethodWriter method_writer = new MethodWriter(declMgr, null, "initializeBindings");
+		method_writer.setAccess("protected");
+		
+		Block block = new Block();
+		for(String comp:bindings.keySet()){
+			String value = bindings.get(comp);
+			block.addCode(ds.getVariable()+".registerBindings("+comp+",\""+value+"\");");
+		}
+		method_writer.addSegment(block);
+		declMgr.addMethod(method_writer);
+		
+		method_writer = new MethodWriter(declMgr, null, "addListener") {
+			protected String getSignature() {
+				return "public void addListener(SwingComponentBindingListener listener)";
+			}
+		};
+		block = new Block();
+		block.addCode(ds.getVariable()+".addListener(listener);");
+		method_writer.addSegment(block);
+		declMgr.addMethod(method_writer);
+		
+		method_writer = new MethodWriter(declMgr, null, "removeListener") {
+			protected String getSignature() {
+				return "public void removeListener(SwingComponentBindingListener listener)";
+			}
+		};
+		block = new Block();
+		block.addCode(ds.getVariable()+".removeListener(listener);");
+		method_writer.addSegment(block);
+		declMgr.addMethod(method_writer);
+		
+		method_writer = new MethodWriter(declMgr, null, "setPropertyValue") {
+			protected String getSignature() {
+				return "public void setPropertyValue(String propKey,Object value)";
+			}
+		};
+		block = new Block();
+		block.addCode(ds.getVariable()+".setPropertyValue(propKey, value);");
+		method_writer.addSegment(block);
+		declMgr.addMethod(method_writer);
+		
+		
+		
+		
+		return true;
+	}
+	
+	
 }

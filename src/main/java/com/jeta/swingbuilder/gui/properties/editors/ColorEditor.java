@@ -23,6 +23,10 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
+import javax.swing.UIManager;
+
+import com.jeta.forms.store.properties.ColorProperty;
+import com.jeta.forms.store.properties.ColorProperty2;
 import com.jeta.open.i18n.I18N;
 import com.jeta.swingbuilder.gui.colorchooser.JETAColorChooser;
 import com.jeta.swingbuilder.gui.properties.JETAPropertyEditor;
@@ -48,7 +52,16 @@ public class ColorEditor extends JETAPropertyEditor {
 	 * Invokes a dialog used to update the property
 	 */
 	public void invokePropertyDialog(Component comp) {
-		Color new_color = JETAColorChooser.invokeColorChooser(comp, (Color) getValue());
+		Object value = getValue();
+		Color c = null;
+		if(value instanceof ColorProperty ){
+			c = ((ColorProperty)value).getColor();
+		}else if(value instanceof ColorProperty2 ){
+			c = ((ColorProperty2)value).getValue();
+		}else{
+			c = (Color) value;
+		}
+		Color new_color = JETAColorChooser.invokeColorChooser(comp, c);
 		if (new_color != null) {
 			setValue(new_color);
 		}
@@ -62,7 +75,15 @@ public class ColorEditor extends JETAPropertyEditor {
 	}
 
 	public void paintValue(Graphics g, Rectangle rect) {
-		Color c = (Color) getValue();
+		Object value = getValue();
+		Color c = null;
+		if(value instanceof ColorProperty ){
+			c = ((ColorProperty)value).getColor();
+		}else if(value instanceof ColorProperty2 ){
+			c = ((ColorProperty2)value).getValue();
+		}else{
+			c = (Color) value;
+		}
 		if (c != null) {
 			int box_height = 12;
 			int box_width = 12;
@@ -83,6 +104,10 @@ public class ColorEditor extends JETAPropertyEditor {
 				m_last_color = c;
 				m_rgb = I18N.format("RGB_3", new Integer(c.getRed()), new Integer(c.getGreen()), new Integer(c.getBlue()));
 			}
+			if(isCustom() && !isEnabled() ){
+				g.setColor(UIManager.getColor("Label.disabledForeground"));
+			}
+
 			m_value_painter.drawString(g, rect, box_width + 10, m_rgb);
 
 		}

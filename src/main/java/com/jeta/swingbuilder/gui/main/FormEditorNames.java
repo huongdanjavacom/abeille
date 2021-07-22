@@ -69,4 +69,9 @@ public class FormEditorNames {
 
 	public static final String ID_TRIM_COLUMNS = "trim.columns";
 	public static final String ID_TRIM_ROWS = "trim.rows";
+	
+	public static final String ID_MOVE_LEFT = "form.move.left";
+	public static final String ID_MOVE_RIGHT = "form.move.right";
+	public static final String ID_MOVE_UP = "form.move.up";
+	public static final String ID_MOVE_DOWN = "form.move.down";
 }

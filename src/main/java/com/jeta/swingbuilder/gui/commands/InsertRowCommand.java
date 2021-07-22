@@ -22,7 +22,7 @@ import javax.swing.undo.CannotRedoException;
 
 import com.jeta.forms.gui.components.ComponentFactory;
 import com.jeta.forms.gui.form.FormComponent;
-import com.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 
 public class InsertRowCommand extends FormUndoableEdit {
 

@@ -25,6 +25,9 @@ import java.beans.PropertyEditorSupport;
  * @author Jeff Tassin
  */
 public abstract class JETAPropertyEditor extends PropertyEditorSupport {
+	
+	private boolean m_enabled = true;
+	private boolean m_custom = false;
 	/**
 	 * Invokes a dialog used to update the property
 	 * 
@@ -57,5 +60,19 @@ public abstract class JETAPropertyEditor extends PropertyEditorSupport {
 	public String getJavaInitializationString() {
 		return "";
 	}
+	
+	public void setEnabled(boolean enabled){
+		m_enabled = enabled;
+	}
+	public boolean isEnabled(){
+		return m_enabled;
+	}
 
+	public boolean isCustom() {
+		return m_custom;
+	}
+
+	public void setCustom(boolean custom) {
+		this.m_custom = custom;
+	}
 }

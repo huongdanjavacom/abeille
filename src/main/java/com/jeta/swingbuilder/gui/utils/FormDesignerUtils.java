@@ -28,31 +28,46 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import com.jeta.forms.gui.common.FormException;
 import com.jeta.forms.gui.form.ComponentConstraints;
+import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.form.ReadOnlyConstraints;
 import com.jeta.forms.store.jml.JMLException;
 import com.jeta.forms.store.jml.JMLUtils;
 import com.jeta.forms.store.jml.dom.JMLNode;
+import com.jeta.forms.store.memento.FormMemento;
 import com.jeta.forms.store.memento.FormPackage;
+import com.jeta.forms.store.memento.StateRequest;
 import com.jeta.forms.store.xml.writer.XMLWriter;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.i18n.I18N;
 import com.jeta.open.registry.JETARegistry;
+import com.jeta.swingbuilder.codegen.builder.SourceBuilder;
 import com.jeta.swingbuilder.gui.commands.CommandUtils;
 import com.jeta.swingbuilder.gui.commands.SetConstraintsCommand;
+import com.jeta.swingbuilder.gui.components.TSErrorDialog;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
+import com.jeta.swingbuilder.gui.filechooser.FileChooserConfig;
+import com.jeta.swingbuilder.gui.filechooser.TSFileChooserFactory;
+import com.jeta.swingbuilder.gui.filechooser.TSFileFilter;
 import com.jeta.swingbuilder.interfaces.resources.ResourceLoader;
 
 /**
@@ -61,10 +76,18 @@ import com.jeta.swingbuilder.interfaces.resources.ResourceLoader;
  * @author Jeff Tassin
  */
 public class FormDesignerUtils {
+	public static final String JETA1_TEST = "jeta1.test";
+	public static final String JETA1_SIMPLE = "jeta1.simple";
+	public static final String JETA1_FIXED = "jeta1.fixed";
+	public static final String JETA1_FIXED_COLSPEC = "jeta1.fixed.colspec";
+	public static final String JETA1_FIXED_ROWSPEC = "jeta1.fixed.rowspec";
+
 	private static Object[] ENV_VARS = null;
 
 	/** cache of images */
 	private static Hashtable m_imagecache = new Hashtable();
+	
+	private static Map<String,Object> m_formprops = new HashMap<String, Object>();  
 
 	/**
 	 * Checks if the span can be set to the given values for the given
@@ -195,6 +218,28 @@ public class FormDesignerUtils {
 		}
 	}
 
+	public static boolean canMoveComponent(GridComponent destCell, GridComponent sourceCell) {
+		if (destCell == null || sourceCell == null)
+			return false;
+
+		if (sourceCell.getBeanDelegate() == null)
+			return false;
+		CellConstraints ccs = sourceCell.getConstraints().createCellConstraints();
+		CellConstraints ccd = destCell.getConstraints().createCellConstraints();
+		
+		GridView pvd = destCell.getParentView();
+		
+		if(ccd.gridX + ccs.gridWidth - 1 > pvd.getRowCount() ) return false;
+		if(ccd.gridY + ccs.gridHeight - 1 > pvd.getColumnCount() ) return false;
+		
+		for(int i=ccd.gridX;i<ccd.gridX + ccs.gridWidth ;i++){
+			for(int j=ccd.gridY;j<ccd.gridY + ccs.gridHeight;j++){
+				GridComponent gc = pvd.getGridComponent(i, j);
+				if(gc != null && gc.getBeanDelegate() != null && gc != sourceCell ) return false;
+			}
+		}
+		return true;
+	}
 	/**
 	 * Sets the span on the given component
 	 */
@@ -273,19 +318,6 @@ public class FormDesignerUtils {
 	}
 
 	/**
-	 * Testing flag
-	 */
-	public static boolean isTest() {
-		try {
-			String result = System.getProperty("jeta1.test");
-			return (result != null && result.equals("true"));
-		} catch (Exception e) {
-
-		}
-		return false;
-	}
-
-	/**
 	 * Debugging flag
 	 */
 	public static boolean isDebug() {
@@ -324,6 +356,113 @@ public class FormDesignerUtils {
 			current_stream.close();
 		}
 	}
+	public static void saveForm(OutputStream os,FormPackage fpackage, String ext) throws IOException, JMLException {
+		if(".xml".equalsIgnoreCase(ext)){
+			JMLNode node = JMLUtils.writeObject(fpackage);
+			Writer writer = new BufferedWriter(new OutputStreamWriter(os, "UTF8"));
+			new XMLWriter().write(writer, node);
+			writer.write('\n');
+			writer.flush();
+			writer.close();
+		}
+		else {
+			ObjectOutputStream current_stream = new ObjectOutputStream(os);
+			current_stream.writeObject(fpackage);
+			current_stream.close();
+		}
+	}
+
+	public static String xmlFromFormPackage(FormPackage fpackage){
+		if(fpackage == null) return null;
+		String xml = null;
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			FormDesignerUtils.saveForm(out,fpackage, ".xml");
+			xml = out.toString();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		return xml;
+	}
+	public static String xmlFromFormMemento(FormMemento fm){
+		if(fm == null) return null;
+		FormPackage fpackage = new FormPackage(fm);
+		return xmlFromFormPackage(fpackage);
+	}
+	
+	public static String xmlFromFormComponent(FormComponent fc){
+		String xml = null;
+		try {
+			FormMemento fm = (FormMemento) fc.getExternalState(StateRequest.DEEP_COPY);
+			return xmlFromFormMemento(fm);
+			
+		} catch (FormException e) {
+			e.printStackTrace();
+		}
+		return xml;
+	}
+	
+	public static String javaFromFormMemento(FormMemento fm){
+		if(fm == null) return null;
+		String src = null;
+		try {
+			String builderClass = fastTrim(fm.getCodeModel().getSourcebuilder());
+			if(builderClass == null || builderClass.length() == 0 ){
+				builderClass = "com.jeta.swingbuilder.codegen.builder.DefaultSourceBuilder";
+			}
+			Class clazz = Class.forName(builderClass);
+			if(clazz == null ) return null;
+			SourceBuilder builder = (SourceBuilder)clazz.newInstance();
+			if(builder == null ) return null;
+			src = builder.buildSource(fm);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return src;
+	}
+	public static String javaFromFormComponent(FormComponent fc){
+		String src = null;
+		try {
+			FormMemento fm = (FormMemento) fc.getExternalState(StateRequest.DEEP_COPY);
+			src = javaFromFormMemento(fm);
+			
+		} catch (FormException e) {
+			e.printStackTrace();
+		}
+		return src;
+	}
+	
+	public static boolean saveFile(Component invoker,String ext,String extName,String extDescript,String fileName,String text){
+		FileChooserConfig fcc = new FileChooserConfig(ext, new TSFileFilter(extName, extDescript));
+		fcc.setParentComponent(invoker);
+		fcc.setInitialDirectory(null);
+		fcc.setInitialFile(fileName);
+		File file = TSFileChooserFactory.showSaveDialog(fcc);
+		if (file == null)
+			return false;
+		else {
+			try {
+
+				String path = file.getPath();
+				int pos = path.lastIndexOf(ext);
+				if (pos != path.length() - 5) {
+					path = path + ext;
+					file = new File(path);
+				}
+
+				FileOutputStream fos = new FileOutputStream(file);
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+				bw.write(text);
+				bw.close();
+				return true;
+			} catch (Exception e) {
+				TSErrorDialog dlg = TSErrorDialog.createDialog(invoker, I18N.getLocalizedMessage("Error"), I18N.getLocalizedMessage("Unable to save file"), e);
+				dlg.showCenterEx();
+				return false;
+			}
+		}
+	}
+	
 
 	public static Object[] getEnvVars(boolean refresh) {
 		if ((ENV_VARS == null) || (refresh)) {
@@ -353,4 +492,87 @@ public class FormDesignerUtils {
 		}
 		return ENV_VARS;
 	}
+	
+	public static Object getFormProperty(String key){
+		return m_formprops.get(key);
+	}
+	
+	public static void setFormProperty(String key,Object value){
+		m_formprops.put(key, value);
+	}
+	
+	/**
+	 * Testing flag
+	 */
+	public static boolean isTest() {
+		if(m_formprops.containsKey(JETA1_TEST)){
+			Boolean ret = (Boolean)m_formprops.get(JETA1_TEST);
+			if(ret != null) return ret.booleanValue(); 
+		}
+		return false;
+	}
+	public static void setTest(boolean test){
+		m_formprops.put(JETA1_TEST, Boolean.valueOf(test));
+	}
+	/**
+	 * Simple flag
+	 */
+	public static boolean isSimple() {
+		if(m_formprops.containsKey(JETA1_SIMPLE)){
+			Boolean ret = (Boolean)m_formprops.get(JETA1_SIMPLE);
+			if(ret != null) return ret.booleanValue(); 
+		}
+		return false;
+	}
+	public static void setSimple(boolean simple){
+		m_formprops.put(JETA1_SIMPLE, Boolean.valueOf(simple));
+	}
+	/**
+	 * Fixed flag
+	 */
+	public static boolean isFixed() {
+		if(m_formprops.containsKey(JETA1_FIXED)){
+			Boolean ret = (Boolean)m_formprops.get(JETA1_FIXED);
+			if(ret != null) return ret.booleanValue(); 
+		}
+		return false;
+	}
+	
+	public static String getFixedColSpec(){
+		if(m_formprops.containsKey(JETA1_FIXED_COLSPEC)){
+			String ret = (String)m_formprops.get(JETA1_FIXED_COLSPEC);
+			return ret; 
+		}
+		return null;
+	}
+	public static String getFixedRowSpec(){
+		if(m_formprops.containsKey(JETA1_FIXED_ROWSPEC)){
+			String ret = (String)m_formprops.get(JETA1_FIXED_ROWSPEC);
+			return ret; 
+		}
+		return null;
+	}
+	
+	public static void setFixed(boolean fixed,int cols,int colodd,int coleven,int rows,int rowodd, int roweven){
+		m_formprops.put(JETA1_FIXED, Boolean.valueOf(fixed));
+		if(fixed){
+			setSimple(true);
+			StringBuffer colspec = new StringBuffer();
+			for (int col = 1; col <= cols; col++) {
+				if (col > 1)
+					colspec.append(",");
+				colspec.append((col%2==0)?"f:"+coleven+"PX:n":"f:"+colodd+"PX:n");
+
+			}
+			StringBuffer rowspec = new StringBuffer();
+			for (int row = 1; row <= rows; row++) {
+				if (row > 1)
+					rowspec.append(",");
+				rowspec.append((row%2==0)?"f:"+roweven+"PX:n":"f:"+rowodd+"PX:n");
+			}
+			m_formprops.put(JETA1_FIXED_COLSPEC, colspec.toString());
+			m_formprops.put(JETA1_FIXED_ROWSPEC, rowspec.toString());
+		}
+	}
+	
 }

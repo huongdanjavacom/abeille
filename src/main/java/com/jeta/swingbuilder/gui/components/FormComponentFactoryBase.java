@@ -76,6 +76,27 @@ public abstract class FormComponentFactoryBase extends AbstractComponentFactory 
 		}
 		return form;
 	}
+	public FormComponent create(ComponentSource compsrc, String compName, GridView parentView, String colspec, String rowspec, boolean embedded) throws FormException {
+		JETABean jbean = JETABeanFactory.createBean(GridView.class.getName(), compName, true, true);
+		GridView childview = (GridView) jbean.getDelegate();
+		childview.initialize(colspec, rowspec);
+
+		String id = FormUtils.createUID();
+		if (compName != null && compName.indexOf("top.parent") >= 0) {
+			id = "top.parent" + id;
+		}
+		else if (embedded) {
+			id = "embedded." + id;
+		}
+
+		FormComponent form = new DesignFormComponent(id, jbean, parentView, embedded);
+		installHandlers(form);
+		FormManager fmgr = (FormManager) JETARegistry.lookup(FormManager.COMPONENT_ID);
+		if (fmgr != null) {
+			fmgr.registerForm(form);
+		}
+		return form;
+	}
 
 	/**
 	 * ComponentFactory implementation

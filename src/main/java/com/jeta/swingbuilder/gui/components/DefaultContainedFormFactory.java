@@ -31,10 +31,10 @@ import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.FormContainerComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.store.memento.FormMemento;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.registry.JETARegistry;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
 
 public class DefaultContainedFormFactory implements ContainedFormFactory {
 	/**

@@ -48,6 +48,16 @@ public interface JETAObjectOutput {
 	 *            the object to write
 	 */
 	public void writeObject(String tagName, Object obj) throws IOException;
+	/**
+	 * Writes an string with the specified name to the store.
+	 * 
+	 * @param tagName
+	 *            the name of the object.
+	 * @param obj
+	 *            the object to write
+	 */
+	public void writeString(String tagName, String value) throws IOException;
+
 
 	/**
 	 * Writes a boolean with the specified name to the store.
@@ -105,4 +115,48 @@ public interface JETAObjectOutput {
 	 */
 	public JETAObjectOutput getSuperClassOutput(Class superClass);
 
+
+	/**
+	 * Writes an long with the specified name to the store.
+	 * 
+	 * @param tagName
+	 *            the name of the integer.
+	 * @param value
+	 *            the value to write
+	 */
+	public void writeLong(String tagName, long value) throws IOException;
+
+	/**
+	 * Writes an long with the specified name to the store. If the value is
+	 * the same as the default value, the store has the option of not saving the
+	 * value.
+	 * 
+	 * @param tagName
+	 * @param value
+	 * @param defaultValue
+	 */
+	public void writeLong(String string, long value, long defaultValue) throws IOException;
+	
+
+
+	/**
+	 * Writes an double with the specified name to the store.
+	 * 
+	 * @param tagName
+	 *            the name of the integer.
+	 * @param value
+	 *            the value to write
+	 */
+	public void writeDouble(String tagName, double value) throws IOException;
+
+	/**
+	 * Writes an double with the specified name to the store. If the value is
+	 * the same as the default value, the store has the option of not saving the
+	 * value.
+	 * 
+	 * @param tagName
+	 * @param value
+	 * @param defaultValue
+	 */
+	public void writeDouble(String string, double value, double defaultValue) throws IOException;
 }

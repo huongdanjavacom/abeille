@@ -25,9 +25,10 @@ import com.jeta.forms.logger.FormsLogger;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.app.AppResourceLoader;
 import com.jeta.swingbuilder.app.ApplicationStateStore;
+import com.jeta.swingbuilder.app.UserPropertiesStore;
 import com.jeta.swingbuilder.common.ComponentNames;
-import com.jeta.swingbuilder.debug.DebugLogger;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
+import com.jeta.swingbuilder.interfaces.app.ObjectStore;
 import com.jeta.swingbuilder.interfaces.resources.ResourceLoader;
 
 /**
@@ -37,31 +38,26 @@ import com.jeta.swingbuilder.interfaces.resources.ResourceLoader;
  * @author Jeff Tassin
  */
 public class FormsInitializer {
-	private DebugLogger m_debug_logger;
-
-	/**
-	 * Checks that the home directory is present. If not, tries to create it.
-	 *
-	 * @param home
-	 * @return
-	 */
-	private boolean checkHome(String home) {
-		boolean bresult = false;
-		try {
-			File f = new File(home);
-			f.mkdir();
-			bresult = true;
-		} catch (Exception e) {
-		}
-		return bresult;
-	}
 
 	/**
 	 * Initializes the application
 	 *
 	 * @param args
 	 */
-	public void initialize(String[] args) {
+	public static void initialize(String[] args) {
+		try {
+			/** for Mac OS X menu bar integration */
+			System.setProperty("apple.laf.useScreenMenuBar", "true");
+			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Abeille Forms Designer");
+
+			if (!FormDesignerUtils.isDebug()) {
+				System.setOut(new java.io.PrintStream(new EmptyStream()));
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		// now try to load properties
 		try {
 			String tshome = null;
@@ -89,8 +85,18 @@ public class FormsInitializer {
 						tshome = tshome + ".abeilleforms13";
 				}
 			}
+			/**
+			 * Checks that the home directory is present. If not, tries to create it.
+			 */
+			boolean bresult = false;
+			try {
+				File f = new File(tshome);
+				f.mkdir();
+				bresult = true;
+			} catch (Exception e) {
 
-			if (checkHome(tshome)) {
+			}
+			if (bresult) {
 				/** the jeta framework */
 				AppResourceLoader loader = new AppResourceLoader(tshome, "images/");
 				JETARegistry.rebind(ResourceLoader.COMPONENT_ID, loader);
@@ -99,8 +105,20 @@ public class FormsInitializer {
 				 * Initialize the components needed by the forms sub-system.
 				 */
 				com.jeta.forms.defaults.DefaultInitializer.initialize();
+				/**
+				 * Gets the language and country from the command line and sets as the
+				 * default locale
+				 */
+				Locale locale = null;
+				if (language != null && country != null)
+					locale = new Locale(language, country);
+				else
+					locale = Locale.getDefault();
 
-				initializeLocale(language, country);
+				com.jeta.open.i18n.I18NHelper oi18n = com.jeta.open.i18n.I18NHelper.getInstance();
+				oi18n.setLocale(locale);
+				oi18n.loadBundle("com.jeta.swingbuilder.resources.MessagesBundle");
+
 				// load global application user settings
 				ApplicationStateStore appstore = new ApplicationStateStore("application");
 				JETARegistry.rebind(ComponentNames.APPLICATION_STATE_STORE, appstore);
@@ -111,11 +129,11 @@ public class FormsInitializer {
 				 * Initialize the components needed by the swing builder system.
 				 */
 				com.jeta.swingbuilder.defaults.DefaultInitializer.initialize();
-
 				/**
-				 * register the help manager
+				 *
 				 */
-				JETARegistry.rebind(ComponentNames.APPLICATION_HELP_FACTORY, new AbeilleHelpFactory());
+				UserPropertiesStore ups = new UserPropertiesStore();
+				ups.startup();
 			}
 			else {
 				System.out.println("Unable to establish home directory: " + tshome);
@@ -130,51 +148,41 @@ public class FormsInitializer {
 
 	}
 
-	/**
-	 * Gets the language and country from the command line and sets as the
-	 * default locale
-	 *
-	 * @param language
-	 * @param country
-	 */
-	void initializeLocale(String language, String country) {
-		Locale locale = null;
-		if (language != null && country != null)
-			locale = new Locale(language, country);
-		else
-			locale = Locale.getDefault();
-
-		com.jeta.open.i18n.I18NHelper oi18n = com.jeta.open.i18n.I18NHelper.getInstance();
-		oi18n.setLocale(locale);
-		oi18n.loadBundle("com.jeta.swingbuilder.resources.MessagesBundle");
-
-	}
-
-	private void startDebugConsole() {
+	public static void shutdown() {
 		try {
-			m_debug_logger = new DebugLogger("localhost");
+			try {
+				Object obj = JETARegistry.lookup(UserPropertiesStore.COMPONENT_ID);
+				if (obj instanceof UserPropertiesStore) {
+					UserPropertiesStore userstore = (UserPropertiesStore) obj;
+					userstore.shutdown();
+				}
+
+				// save the main application state
+				ObjectStore os = (ObjectStore) JETARegistry.lookup(ComponentNames.APPLICATION_STATE_STORE);
+				os.flush();
+			} catch (Exception e) {
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.exit(0);
 	}
 
+
 	/**
-	 * LoggerHandler for writing log message to console.
-	 *
-	 * @temp
+	 * Trap all system.out
 	 */
-	/*
-	 * public class DebugHandler extends Handler { public DebugHandler() {
-	 * setFormatter( new java.util.logging.SimpleFormatter() ); }
-	 *
-	 * public boolean isLoggable(LogRecord record) { return true; }
-	 *
-	 * public void close() { }
-	 *
-	 * public void flush() { }
-	 *
-	 * public void publish( LogRecord record ) { if ( m_debug_logger != null )
-	 * m_debug_logger.sendRequest( record.getMessage() ); } }
-	 */
+	private static class EmptyStream extends java.io.OutputStream {
+		@Override
+        public void write(byte[] b) throws java.io.IOException {
+			// ignore
+		}
+
+		@Override
+        public void write(int ival) throws java.io.IOException {
+			// ignore
+		}
+	}
+
 
 }

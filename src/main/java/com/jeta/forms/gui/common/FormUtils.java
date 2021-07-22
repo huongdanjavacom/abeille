@@ -35,8 +35,8 @@ import java.awt.Container;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.registry.JETARegistry;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Utility methods for the form builder.
@@ -89,7 +89,7 @@ public class FormUtils {
 			 */
 			m_count++;
 			java.util.Calendar c = java.util.Calendar.getInstance();
-			java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEE, MMM d, yyyy - HH:mm:ss");
+			java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyyMMddHHmmssZZZ");
 			return String.valueOf(m_count) + "." + format.format(c.getTime());
 		}
 		else {

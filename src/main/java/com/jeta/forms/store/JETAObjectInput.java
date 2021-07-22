@@ -110,4 +110,47 @@ public interface JETAObjectInput {
 	 */
 	public JETAObjectInput getSuperClassInput();
 
+
+	/**
+	 * Reads an long with the specified name from the store.
+	 * 
+	 * @param tagName
+	 *            the name of the integer.
+	 * @return the integer value with the specified name. Zero is returned if a
+	 *         value is not found with specified name.
+	 */
+	public long readLong(String tagName) throws IOException;
+
+	/**
+	 * Reads an long with the specified name from the store.
+	 * 
+	 * @param tagName
+	 *            the name of the integer.
+	 * @param defaultValue
+	 *            if the value is not found, the default value is returned.
+	 * @return the integer value with the specified name (or the default value)
+	 */
+	public long readLong(String tagName, long defaultValue) throws IOException;
+
+	/**
+	 * Reads an double with the specified name from the store.
+	 * 
+	 * @param tagName
+	 *            the name of the integer.
+	 * @return the integer value with the specified name. Zero is returned if a
+	 *         value is not found with specified name.
+	 */
+	public double readDouble(String tagName) throws IOException;
+
+	/**
+	 * Reads an double with the specified name from the store.
+	 * 
+	 * @param tagName
+	 *            the name of the integer.
+	 * @param defaultValue
+	 *            if the value is not found, the default value is returned.
+	 * @return the integer value with the specified name (or the default value)
+	 */
+	public double readDouble(String tagName, double defaultValue) throws IOException;
+	
 }

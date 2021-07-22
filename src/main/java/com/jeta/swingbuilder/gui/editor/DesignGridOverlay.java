@@ -186,6 +186,9 @@ public class DesignGridOverlay extends JPanel implements GridCellListener, GridO
 	 */
 	@Override
     public void paintComponent(Graphics g) {
+
+		m_view.resetSelected();
+
 		Color old_c = g.getColor();
 		g.setColor(m_grid_color);
 

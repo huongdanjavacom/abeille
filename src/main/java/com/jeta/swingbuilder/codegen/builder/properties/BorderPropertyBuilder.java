@@ -38,7 +38,7 @@ import com.jeta.forms.store.properties.EmptyBorderProperty;
 import com.jeta.forms.store.properties.EtchedBorderProperty;
 import com.jeta.forms.store.properties.LineBorderProperty;
 import com.jeta.forms.store.properties.TitledBorderProperty;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.LocalVariableDeclaration;
 import com.jeta.swingbuilder.codegen.builder.MethodStatement;
@@ -51,7 +51,7 @@ public class BorderPropertyBuilder implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			Method write = pd.getWriteMethod();
 			if (value instanceof BorderProperty) {
@@ -78,7 +78,7 @@ public class BorderPropertyBuilder implements PropertyWriter {
 		}
 	}
 
-	private VariableDeclaration createCompoundBorder(DeclarationManager declMgr, BeanWriter writer, CompoundBorderProperty cp) {
+	private VariableDeclaration createCompoundBorder(DeclarationManager declMgr, BaseBeanWriter writer, CompoundBorderProperty cp) {
 		if (cp.size() == 0) {
 			return null;
 		}
@@ -116,7 +116,7 @@ public class BorderPropertyBuilder implements PropertyWriter {
 		return result;
 	}
 
-	private LocalVariableDeclaration createBorder(DeclarationManager declMgr, BeanWriter writer, BorderProperty bp) {
+	private LocalVariableDeclaration createBorder(DeclarationManager declMgr, BaseBeanWriter writer, BorderProperty bp) {
 		LocalVariableDeclaration border_var = null;
 
 		if (bp instanceof BevelBorderProperty) {

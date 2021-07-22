@@ -26,6 +26,10 @@ import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import com.jeta.forms.store.properties.DoubleProperty;
+import com.jeta.forms.store.properties.FloatProperty;
+import com.jeta.forms.store.properties.IntegerProperty;
+import com.jeta.forms.store.properties.LongProperty;
 import com.jeta.swingbuilder.gui.components.FloatDocument;
 import com.jeta.swingbuilder.gui.components.IntegerDocument;
 import com.jeta.swingbuilder.gui.properties.JETAPropertyEditor;
@@ -105,6 +109,7 @@ public class NumericEditor extends JETAPropertyEditor {
 	 * @return the custom editor
 	 */
 	public Component getCustomEditor() {
+		if(isCustom()) m_field.setEnabled(isEnabled());
 		return m_panel;
 	}
 
@@ -205,6 +210,16 @@ public class NumericEditor extends JETAPropertyEditor {
 		public IntegerEditor() {
 			super(Integer.class);
 		}
+		
+		
+		public void setValue(Object value) {
+			if(value instanceof IntegerProperty){
+				IntegerProperty obj = (IntegerProperty)value;
+				super.setValue(obj.getValue());
+			}else{
+				super.setValue(value);
+			}
+		}
 	}
 
 	public static class ByteEditor extends NumericEditor {
@@ -223,17 +238,47 @@ public class NumericEditor extends JETAPropertyEditor {
 		public LongEditor() {
 			super(Long.class);
 		}
+		
+		
+		public void setValue(Object value) {
+			if(value instanceof LongProperty){
+				LongProperty obj = (LongProperty)value;
+				super.setValue(obj.getValue());
+			}else{
+				super.setValue(value);
+			}
+		}
 	}
 
 	public static class FloatEditor extends NumericEditor {
 		public FloatEditor() {
 			super(Float.class);
 		}
+		
+		
+		public void setValue(Object value) {
+			if(value instanceof FloatProperty){
+				FloatProperty obj = (FloatProperty)value;
+				super.setValue(obj.getValue());
+			}else{
+				super.setValue(value);
+			}
+		}
 	}
 
 	public static class DoubleEditor extends NumericEditor {
 		public DoubleEditor() {
 			super(Double.class);
+		}
+		
+		
+		public void setValue(Object value) {
+			if(value instanceof DoubleProperty){
+				DoubleProperty obj = (DoubleProperty)value;
+				super.setValue(obj.getValue());
+			}else{
+				super.setValue(value);
+			}
 		}
 	}
 }

@@ -54,6 +54,8 @@ public class FormEditorPopupMenu extends JPopupMenu {
 		add(createMenuItem(I18N.getLocalizedMessage("Copy"), TSComponentNames.ID_COPY, null));
 		add(createMenuItem(I18N.getLocalizedMessage("Paste"), TSComponentNames.ID_PASTE, null));
 		add(createMenuItem(I18N.getLocalizedMessage("Paste Special"), FormEditorNames.ID_PASTE_SPECIAL, null));
+		addSeparator();
+		add(createMenuItem(I18N.getLocalizedMessage("Delete"), FormEditorNames.ID_DELETE_COMPONENT, null));
 
 		addSeparator();
 		add(createMenuItem(I18N.getLocalizedMessage("Insert Column"), FormEditorNames.ID_INSERT_COLUMN_LEFT, null));

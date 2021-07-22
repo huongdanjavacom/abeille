@@ -50,13 +50,14 @@ public class BeanMemento extends ComponentMemento {
 	/**
 	 * The version for this class.
 	 */
-	public static final int VERSION = 2;
+	public static final int VERSION = 3;
 
 	/**
 	 * Currently, this is "com.jeta.forms.gui.beans.JETABean". It may change in
 	 * the future.
 	 */
 	private String m_jetabean_class;
+	private String m_jetabean_id;
 
 	/**
 	 * The class name of the Swing-based Java bean whose state is represented
@@ -121,6 +122,9 @@ public class BeanMemento extends ComponentMemento {
 	public String getJETABeanClass() {
 		return m_jetabean_class;
 	}
+	public String getJETABeanID() {
+		return m_jetabean_id;
+	}
 
 	/**
 	 * The class name of the Swing-based Java bean whose state is represented
@@ -180,6 +184,9 @@ public class BeanMemento extends ComponentMemento {
 	public void setJETABeanClass(String className) {
 		m_jetabean_class = className;
 	}
+	public void setJETABeanID(String beanID) {
+		m_jetabean_id = beanID;
+	}
 
 	/**
 	 * @deprecated Use <code>setProperties</code> instead.
@@ -209,7 +216,7 @@ public class BeanMemento extends ComponentMemento {
 			m_custom_properties = (Collection) in.readObject("custom_properties");
 			m_properties = null;
 		}
-		else {
+		if (version > 1) {
 			Object props = in.readObject("beanproperties");
 			if (props instanceof byte[]) {
 				/** deprecated support */
@@ -220,6 +227,9 @@ public class BeanMemento extends ComponentMemento {
 			else if (props instanceof PropertiesMemento) {
 				m_properties = (PropertiesMemento) props;
 			}
+		}
+		if (version > 2) {
+			m_jetabean_id = in.readString("jetabeanid");
 		}
 	}
 
@@ -232,6 +242,7 @@ public class BeanMemento extends ComponentMemento {
 		out.writeObject("jetabeanclass", m_jetabean_class);
 		out.writeObject("beanclass", m_bean_class);
 		out.writeObject("beanproperties", m_properties);
+		out.writeObject("jetabeanid", m_jetabean_id);
 	}
 
 }

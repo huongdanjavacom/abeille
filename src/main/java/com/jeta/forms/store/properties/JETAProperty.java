@@ -65,6 +65,8 @@ import com.jeta.forms.store.jml.JMLObjectOutput;
  */
 public abstract class JETAProperty extends AbstractJETAPersistable {
 	static final long serialVersionUID = -7709719636185198546L;
+	
+	public static final String VALUE = "value";
 
 	/**
 	 * The current version number of this class

@@ -20,15 +20,14 @@ package com.jeta.swingbuilder.gui.images;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 
 import com.jeta.forms.components.panel.FormPanel;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.properties.IconProperty;
 import com.jeta.open.gui.framework.JETAPanel;
-import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 
 /**
@@ -110,8 +109,9 @@ public class ImagePropertiesView extends JETAPanel {
 		else {
 			setDescription(iProp.getDescription());
 			setRelativePath(iProp.getRelativePath());
-			ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-			setImage(pmgr.loadImage(iProp.getRelativePath()));
+			Toolkit toolkit = Toolkit.getDefaultToolkit();
+			ImageIcon image = new ImageIcon(toolkit.createImage(iProp.getRelativePath()));
+			setImage(image);
 		}
 	}
 

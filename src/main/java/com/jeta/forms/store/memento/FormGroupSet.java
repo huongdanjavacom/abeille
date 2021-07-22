@@ -148,8 +148,8 @@ public class FormGroupSet extends AbstractJETAPersistable {
 	 * 
 	 * @return this group definition as an array that is suitable for the
 	 *         FormLayout. See:
-	 *         {@link com.jgoodies.forms.layout.FormLayout.setColumnGroups} See:
-	 *         {@link com.jgoodies.forms.layout.FormLayout.setRowGroups}
+	 *         {@link com.jeta.jgoodies.forms.layout.FormLayout.setColumnGroups} See:
+	 *         {@link com.jeta.jgoodies.forms.layout.FormLayout.setRowGroups}
 	 */
 	public int[][] toArray() {
 		int[][] result = new int[m_groups.size()][];

@@ -37,6 +37,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 
 import com.jeta.forms.gui.common.FormUtils;
+import com.jeta.forms.gui.components.ComponentSource;
 import com.jeta.forms.gui.components.EmptyComponentFactory;
 import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.FormComponentFactory;
@@ -48,6 +49,10 @@ import com.jeta.forms.logger.FormsLogger;
 import com.jeta.forms.store.memento.ComponentMemento;
 import com.jeta.forms.store.memento.ComponentMementoProxy;
 import com.jeta.forms.store.properties.effects.PaintProperty;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.Sizes;
 import com.jeta.open.gui.framework.JETAController;
 import com.jeta.open.gui.framework.JETADialog;
 import com.jeta.open.gui.utils.JETAToolbox;
@@ -64,6 +69,7 @@ import com.jeta.swingbuilder.gui.commands.EditTextPropertyCommand;
 import com.jeta.swingbuilder.gui.commands.FormUndoableEdit;
 import com.jeta.swingbuilder.gui.commands.InsertColumnCommand;
 import com.jeta.swingbuilder.gui.commands.InsertRowCommand;
+import com.jeta.swingbuilder.gui.commands.MoveComponentCommand;
 import com.jeta.swingbuilder.gui.commands.ReplaceComponentCommand;
 import com.jeta.swingbuilder.gui.commands.SetCellBackgroundCommand;
 import com.jeta.swingbuilder.gui.commands.SetPropertyCommand;
@@ -81,9 +87,6 @@ import com.jeta.swingbuilder.gui.properties.PropertyPaneContainer;
 import com.jeta.swingbuilder.gui.undo.UndoableEditProxy;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 import com.jeta.swingbuilder.interfaces.userprops.TSUserPropertiesUtils;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
-import com.jgoodies.forms.layout.Sizes;
 
 /**
  * Handles user events for the FormEditorFrame
@@ -91,7 +94,7 @@ import com.jgoodies.forms.layout.Sizes;
  * @author Jeff Tassin
  */
 public abstract class FormEditorController extends JETAController {
-	private MainFrame m_frame;
+	private MainPanel m_frame;
 
 	/**
 	 * Popup menu
@@ -101,7 +104,7 @@ public abstract class FormEditorController extends JETAController {
 	/**
 	 * ctor
 	 */
-	public FormEditorController(MainFrame frame, JPopupMenu popup) {
+	public FormEditorController(MainPanel frame, JPopupMenu popup) {
 		super(frame);
 		m_frame = frame;
 		m_popup = popup;
@@ -110,6 +113,11 @@ public abstract class FormEditorController extends JETAController {
 		assignAction(TSComponentNames.ID_COPY, new CopyAction());
 		assignAction(TSComponentNames.ID_PASTE, new PasteAction());
 		assignAction(FormEditorNames.ID_PASTE_SPECIAL, new PasteSpecialAction());
+		assignAction(FormEditorNames.ID_MOVE_LEFT, new MoveComponentAction(-1,0));
+		assignAction(FormEditorNames.ID_MOVE_RIGHT, new MoveComponentAction(1,0));
+		assignAction(FormEditorNames.ID_MOVE_UP, new MoveComponentAction(0,-1));
+		assignAction(FormEditorNames.ID_MOVE_DOWN, new MoveComponentAction(0,1));
+		assignAction(FormEditorNames.ID_DELETE_COMPONENT, new DeleteComponentAction());
 		assignAction(TSComponentNames.ID_UNDO, new UndoAction());
 		assignAction(TSComponentNames.ID_REDO, new RedoAction());
 
@@ -128,20 +136,22 @@ public abstract class FormEditorController extends JETAController {
 		assignAction(FormEditorNames.ID_COLUMN_INCREASE_SPAN, new IncrementColumnSpanAction(true));
 		assignAction(FormEditorNames.ID_ROW_DECREASE_SPAN, new IncrementRowSpanAction(false));
 		assignAction(FormEditorNames.ID_ROW_INCREASE_SPAN, new IncrementRowSpanAction(true));
-
-		assignAction(FormEditorNames.ID_COLUMN_PREFERRED_SIZE, new ColumnSetPreferredSizeAction());
-		assignAction(FormEditorNames.ID_ROW_PREFERRED_SIZE, new RowSetPreferredSizeAction());
-
+		
+		if(!FormDesignerUtils.isSimple()){
+			assignAction(FormEditorNames.ID_COLUMN_PREFERRED_SIZE, new ColumnSetPreferredSizeAction());
+			assignAction(FormEditorNames.ID_ROW_PREFERRED_SIZE, new RowSetPreferredSizeAction());
+		}
 		assignAction(FormEditorNames.ID_SHOW_GRID, new ShowGridAction());
 
 		assignAction(FormEditorNames.ID_TRIM_ROWS, new TrimRowsAction());
 		assignAction(FormEditorNames.ID_TRIM_COLUMNS, new TrimColumnsAction());
-		assignAction(FormEditorNames.ID_DELETE_COMPONENT, new DeleteComponentAction());
 
-		assignAction(FormEditorNames.ID_COLUMN_RESIZE_GROW, new ColumnResizeAction(true));
-		assignAction(FormEditorNames.ID_COLUMN_RESIZE_NONE, new ColumnResizeAction(false));
-		assignAction(FormEditorNames.ID_ROW_RESIZE_GROW, new RowResizeAction(true));
-		assignAction(FormEditorNames.ID_ROW_RESIZE_NONE, new RowResizeAction(false));
+		if(!FormDesignerUtils.isSimple()){
+			assignAction(FormEditorNames.ID_COLUMN_RESIZE_GROW, new ColumnResizeAction(true));
+			assignAction(FormEditorNames.ID_COLUMN_RESIZE_NONE, new ColumnResizeAction(false));
+			assignAction(FormEditorNames.ID_ROW_RESIZE_GROW, new RowResizeAction(true));
+			assignAction(FormEditorNames.ID_ROW_RESIZE_NONE, new RowResizeAction(false));
+		}
 	}
 
 	/**
@@ -537,7 +547,7 @@ public abstract class FormEditorController extends JETAController {
 				GridView view = gc.getParentView();
 				if (view != null) {
 					int col = gc.getColumn();
-					String colspec = "d";
+					String colspec = "f:90PX:n";
 					if (!m_left)
 						col++;
 
@@ -571,7 +581,7 @@ public abstract class FormEditorController extends JETAController {
 					if (!m_above)
 						row++;
 
-					String rowspec = "d";
+					String rowspec = "f:23PX:n";
 					InsertRowCommand cmd = new InsertRowCommand(view.getParentForm(), row, new RowSpec(rowspec), new EmptyComponentFactory(getCurrentEditor()
 							.getComponentSource()));
 					CommandUtils.invoke(cmd, getCurrentEditor());
@@ -1059,6 +1069,53 @@ public abstract class FormEditorController extends JETAController {
 					next.setSelected(true);
 				}
 			}
+		}
+	}
+	/**
+	 * Move the current cell
+	 */
+	public class MoveComponentAction extends AbstractAction {
+		private int movex;
+		private int movey;
+		
+		public MoveComponentAction(int movex,int movey){
+			this.movex = movex;
+			this.movey = movey;
+		}
+		
+		public void actionPerformed(ActionEvent evt) {
+			GridComponent gc = getCurrentEditor().getSelectedComponent();
+			if (gc == null) return;
+			if (gc.getBeanDelegate() == null) return;
+			
+			GridView view = gc.getParentView();
+			if (view == null) return;
+			
+			CellConstraints cc = gc.getConstraints().createCellConstraints();
+			
+			int row = cc.gridY + this.movey;
+			int col = cc.gridX + this.movex;
+			if(row < 0 || col < 0)return;
+			if(row > view.getRowCount()||col>view.getColumnCount() ){
+				return;
+			}
+			GridComponent destCell = view.getGridComponent(col,row);
+			if(!FormDesignerUtils.canMoveComponent(destCell, gc)){
+				return;
+			}
+			
+			FormEditor editor = FormEditor.getEditor(view);
+			ComponentSource compsrc = editor.getComponentSource();
+			GridComponent destComp = destCell;
+			FormComponent destForm = view.getParentForm();
+			GridComponent srcComp = gc;
+			FormComponent srcForm = FormComponent.getParentForm(srcComp);
+			MoveComponentCommand cmd = new MoveComponentCommand(destForm, destComp, srcForm, srcComp, compsrc);
+			CommandUtils.invoke(cmd, editor);
+			compsrc.setSelectionTool();
+			srcComp.setSelected(true);
+			destComp.setSelected(false);
+			
 		}
 	}
 

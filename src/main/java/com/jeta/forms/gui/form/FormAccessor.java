@@ -33,8 +33,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.util.Iterator;
 
+import com.jeta.jgoodies.forms.layout.CellConstraints;
 import com.jeta.open.support.SwingComponentSupport;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * A FormAccessor is used to programmatically access and modify components on a

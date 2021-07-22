@@ -20,8 +20,12 @@ package com.jeta.swingbuilder.gui.components;
 
 import java.awt.Component;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Properties;
 
 import com.jeta.forms.beanmgr.BeanManager;
+import com.jeta.forms.components.ObjectConvert;
 import com.jeta.forms.gui.beans.JETABean;
 import com.jeta.forms.gui.beans.JETABeanFactory;
 import com.jeta.forms.gui.common.FormException;
@@ -32,6 +36,7 @@ import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.form.StandardComponent;
 import com.jeta.open.registry.JETARegistry;
+import com.jeta.swingbuilder.store.RegisteredBean;
 
 /**
  * A factory for creating swing components
@@ -52,6 +57,11 @@ public class SwingComponentFactory extends StandardComponentFactory {
 	 * Object values for the constructor of the component class
 	 */
 	private Object[] m_args = new Object[0];
+	
+	/**
+	 * Properties
+	 */
+	private RegisteredBean m_bean = null;
 
 	/**
 	 * ctor
@@ -70,16 +80,33 @@ public class SwingComponentFactory extends StandardComponentFactory {
 		m_params = params;
 		m_args = args;
 	}
+	/**
+	 * ctor
+	 */
+	public SwingComponentFactory(ComponentSource compSrc, RegisteredBean bean) {
+		super(compSrc);
+		m_bean = bean;
+		m_comp_class = m_bean.getClassName();
+		m_params = m_bean.getCtorParams();
+		m_args = m_bean.getCtorArgs();
+		System.out.println("SwingComponentFactory =>"+bean.getId()+"  "+bean.getClassName());
+	}
 
 	public GridComponent createComponent(String compName, GridView view) throws FormException {
 		try {
-			JETABean jetabean = JETABeanFactory.createBean(getComponentClass(), compName, true, true);
+			JETABean jetabean = null;
+			if(m_bean != null){
+				jetabean = JETABeanFactory.createBean(m_bean.getId(), getComponentClass(), compName, true, true);
+			}else{
+				jetabean = JETABeanFactory.createBean(getComponentClass(), compName, true, true);
+			}
 			if (jetabean == null) {
 				BeanManager bm = (BeanManager) JETARegistry.lookup(BeanManager.COMPONENT_ID);
 				Class c = bm.getBeanClass(getComponentClass());
 				Constructor ctor = c.getConstructor(m_params);
 				Component comp = (Component) ctor.newInstance(m_args);
 				comp.setName(compName);
+				initializeBean(comp);
 				return super.createComponent(comp, view);
 			}
 			else {
@@ -103,4 +130,23 @@ public class SwingComponentFactory extends StandardComponentFactory {
 	public String getComponentClass() {
 		return m_comp_class;
 	}
+	
+	protected void initializeBean(Component comp){
+		if(m_bean == null) return;
+		Properties props = m_bean.getInitializeProperties();
+		if(props == null) return ;
+		for(Object key:props.keySet()){
+			Method method = m_bean.getInitializeMethod(key.toString());
+			Class clazz = m_bean.getInitializeClass(key.toString());
+			if(method != null){
+				try {
+					Object value = ObjectConvert.Converter(clazz, props.getProperty(key.toString()));
+					method.invoke(comp,value );
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 }

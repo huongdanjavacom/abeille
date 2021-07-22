@@ -18,12 +18,22 @@
 
 package com.jeta.swingbuilder.codegen.builder;
 
+import com.jeta.forms.store.memento.FormMemento;
+
 /*******************************************************************************
  * This object builds the Java source that corresponds to the given FormMemento.
  * 
  * @author Jeff Tassin
  */
 public interface SourceBuilder {
+	/**
+	 * component id for the JETARegistry
+	 */
+	public static final String COMPONENT_ID = "jeta.forms.SourceBuilder";
+	
+	public static final String BUILD_CONSTANT_SIZE = "SourceBuilder.isBuildConstantSize";
+	public static final String BUILD_INCLUDE_BINDING = "SourceBuilder.isIncludeBinding";
+	
 	public void closeBrace();
 
 	public void dedent();
@@ -39,4 +49,8 @@ public interface SourceBuilder {
 	public void print(String txt);
 
 	public void print(char c);
+	
+	public void buildSourceCustom(ClassDeclarationManager cdm);
+	
+	public String buildSource(FormMemento fm);
 }

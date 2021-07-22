@@ -39,10 +39,7 @@ import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.form.GridViewEvent;
 import com.jeta.forms.gui.form.GridViewListener;
 import com.jeta.forms.gui.form.ReadOnlyConstraints;
-import com.jeta.forms.gui.formmgr.FormManager;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.store.memento.ComponentMemento;
-import com.jeta.forms.store.memento.FormMemento;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.open.resources.AppResourceLoader;
 
@@ -220,39 +217,6 @@ public class DesignFormComponent extends FormComponent implements GridViewListen
 		GridView view = getChildView();
 		DesignGridOverlay overlay = (DesignGridOverlay) view.getOverlay();
 		return !overlay.isOpaque();
-	}
-
-	/**
-	 * Creates and initializes a FormComponent from the given form memento.
-	 */
-	@Override
-    protected FormComponent openLinkedForm(FormMemento fm) throws FormException {
-		FormManager fmgr = (FormManager) JETARegistry.lookup(FormManager.COMPONENT_ID);
-
-		/**
-		 * If we are in design mode and a child form is encountered that is
-		 * linked, then we open the form using the formmanager. This is because
-		 * another view might have the linked form opened already. This can
-		 * never happen if the form is embedded.
-		 */
-		if (FormUtils.isDesignMode()) {
-			/**
-			 * Here we must assume that any other views to the same form *must*
-			 * be deactivated by the FormManager.
-			 */
-			FormComponent fc = fmgr.getForm(fm.getId());
-			if (fc == null) {
-
-				ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-				String abspath = pmgr.getAbsolutePath(fm.getRelativePath());
-				fc = fmgr.openLinkedForm(abspath);
-			}
-			return fc;
-		}
-		else {
-			FormUtils.safeAssert(false);
-			return super.openLinkedForm(fm);
-		}
 	}
 
 	/**

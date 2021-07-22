@@ -31,8 +31,8 @@ import com.jeta.forms.gui.form.FormComponent;
 import com.jeta.forms.gui.form.GridComponent;
 import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.store.memento.FormGroupSet;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 
 /**
  * Command that deletes a row from a view.

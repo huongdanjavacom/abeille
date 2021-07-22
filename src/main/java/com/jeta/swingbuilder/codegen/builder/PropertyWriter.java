@@ -21,5 +21,5 @@ package com.jeta.swingbuilder.codegen.builder;
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 
 public interface PropertyWriter {
-	void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value);
+	void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value);
 }

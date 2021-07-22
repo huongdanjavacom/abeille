@@ -189,8 +189,9 @@ public class DynamicPropertyDescriptor implements JETAPropertyDescriptor {
 				JETAProperty prop = (JETAProperty) value;
 				if (!getName().equals(prop.getName())) {
 					/** This should never happen */
-					System.out.println("DynamicPropertyDescriptor.setPropertyValue  getName(): " + getName() + "  prop.getName(): " + prop.getName());
-					FormUtils.safeAssert(false);
+					//System.out.println("DynamicPropertyDescriptor.setPropertyValue  getName(): " + getName() + "  prop.getName(): " + prop.getName());
+					//FormUtils.safeAssert(false);
+					// for custom properties
 				}
 
 				try {

@@ -35,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
 
 import com.jeta.open.gui.framework.JETAPanel;
+import com.jeta.open.i18n.I18N;
 import com.jeta.swingbuilder.gui.components.TableUtils;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
 import com.jeta.swingbuilder.gui.formmgr.EditorManager;
@@ -121,7 +122,7 @@ public class UndoManagerView extends JETAPanel {
 			if (editor.isLinked()) {
 				String filename = editor.getForm().getFileName();
 				if (filename == null)
-					filename = "New Form";
+					filename = I18N.getLocalizedMessage("New Form");
 				title = filename;
 			}
 			else {

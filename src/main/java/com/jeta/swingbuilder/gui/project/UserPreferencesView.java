@@ -25,9 +25,8 @@ import java.awt.event.ActionListener;
 import com.jeta.forms.components.panel.FormPanel;
 import com.jeta.forms.gui.beans.factories.LabelBeanFactory;
 import com.jeta.forms.gui.common.FormUtils;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.open.gui.framework.JETAPanel;
-import com.jeta.open.registry.JETARegistry;
+import com.jeta.swingbuilder.codegen.gui.config.FormCodeModelNames;
 import com.jeta.swingbuilder.gui.components.FloatDocument;
 import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
 import com.jeta.swingbuilder.interfaces.userprops.TSUserPropertiesUtils;
@@ -63,14 +62,8 @@ public class UserPreferencesView extends JETAPanel {
 		getTextField(UserPreferencesNames.ID_COL_LARGE_SEP_SIZE).setDocument(new FloatDocument(false));
 		getTextField(UserPreferencesNames.ID_ROW_STD_SEP_SIZE).setDocument(new FloatDocument(false));
 		getTextField(UserPreferencesNames.ID_ROW_LARGE_SEP_SIZE).setDocument(new FloatDocument(false));
-		getButton(UserPreferencesNames.ID_CLEAR_CACHE).addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				ProjectManager pmgr = (ProjectManager) JETARegistry.lookup(ProjectManager.COMPONENT_ID);
-				if (pmgr != null)
-					pmgr.clearResourceCache();
-			}
-		});
 		loadModel();
+		getComboBox(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS).setEnabled(false);
 	}
 
 	/**
@@ -82,8 +75,6 @@ public class UserPreferencesView extends JETAPanel {
 		setSeparatorSize(UserPreferencesNames.ID_ROW_STD_SEP_SIZE, UserPreferencesNames.ID_ROW_STD_SEP_UNITS);
 		setSeparatorSize(UserPreferencesNames.ID_ROW_LARGE_SEP_SIZE, UserPreferencesNames.ID_ROW_LARGE_SEP_UNITS);
 
-		setSelected(UserPreferencesNames.ID_CACHE_IMAGES, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_CACHE_IMAGES, true));
-		setSelected(UserPreferencesNames.ID_OPEN_LAST_PROJECT, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_OPEN_LAST_PROJECT, true));
 		setSelected(UserPreferencesNames.ID_STORE_AS_XML, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_STORE_AS_XML, false));
 
 		setSelected(UserPreferencesNames.ID_SHOW_RESIZE_HANDLES, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_SHOW_RESIZE_HANDLES, true));
@@ -94,7 +85,16 @@ public class UserPreferencesView extends JETAPanel {
 				.getHorizontalAlignment()));
 
 		setSelectedItem(UserPreferencesNames.ID_LABEL_H_ALIGN, halign);
-		setSelectedItem(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS, TSUserPropertiesUtils.getString(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS, "PX"));
+		setSelectedItem(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS, "PX");//TSUserPropertiesUtils.getString(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS, "PX"));
+		
+		setText(FormCodeModelNames.ID_MEMBER_PREFIX, TSUserPropertiesUtils.getString(UserPreferencesNames.ID_MEMBER_PREFIX, "m_"));
+		setSelected(FormCodeModelNames.ID_INCLUDE_MAIN, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_INCLUDE_MAIN, true));
+		setSelected(FormCodeModelNames.ID_INCLUDE_CTOR, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_INCLUDE_CTOR, false));
+		setSelected(FormCodeModelNames.ID_INCLUDE_NONSTANDARD, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_INCLUDE_NONSTANDARD, true));
+		setSelected(FormCodeModelNames.ID_INCLUDE_LOADIMAGE, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_INCLUDE_LOADIMAGE, false));
+		setSelected(FormCodeModelNames.ID_INCLUDE_BINDING, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_INCLUDE_BINDING, true));
+		setSelected(FormCodeModelNames.ID_BUILD_CONSTANT, TSUserPropertiesUtils.getBoolean(UserPreferencesNames.ID_BUILD_CONSTANT, false));
+		
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class UserPreferencesView extends JETAPanel {
 	}
 
 	private void setSeparatorSize(String sz_field, String units_field) {
-		String units = TSUserPropertiesUtils.getString(units_field, "DLU");
+		String units = "PX";//TSUserPropertiesUtils.getString(units_field, "PX");
 		String defsize = FormUtils.getReasonableSize(units);
 		if ("DLU".equalsIgnoreCase(units)) {
 			if (UserPreferencesNames.ID_COL_STD_SEP_SIZE.equals(sz_field))
@@ -123,6 +123,7 @@ public class UserPreferencesView extends JETAPanel {
 
 		setSelectedItem(units_field, units);
 		setText(sz_field, sz);
+		getComboBox(units_field).setEnabled(false);
 	}
 
 	/**
@@ -133,15 +134,19 @@ public class UserPreferencesView extends JETAPanel {
 		saveSeparatorSize(UserPreferencesNames.ID_COL_LARGE_SEP_SIZE, UserPreferencesNames.ID_COL_LARGE_SEP_UNITS);
 		saveSeparatorSize(UserPreferencesNames.ID_ROW_STD_SEP_SIZE, UserPreferencesNames.ID_ROW_STD_SEP_UNITS);
 		saveSeparatorSize(UserPreferencesNames.ID_ROW_LARGE_SEP_SIZE, UserPreferencesNames.ID_ROW_LARGE_SEP_UNITS);
-		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_CACHE_IMAGES, isSelected(UserPreferencesNames.ID_CACHE_IMAGES));
-		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_OPEN_LAST_PROJECT, isSelected(UserPreferencesNames.ID_OPEN_LAST_PROJECT));
 		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_STORE_AS_XML, isSelected(UserPreferencesNames.ID_STORE_AS_XML));
 		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_SHOW_RESIZE_HANDLES, isSelected(UserPreferencesNames.ID_SHOW_RESIZE_HANDLES));
 		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_SHOW_ERROR_STACK, isSelected(UserPreferencesNames.ID_SHOW_ERROR_STACK));
 
-		TSUserPropertiesUtils.setString(LabelBeanFactory.ID_DEFAULT_HORIZONTAL_ALIGNMENT, (String) m_view
-				.getSelectedItem(UserPreferencesNames.ID_LABEL_H_ALIGN));
+		TSUserPropertiesUtils.setString(LabelBeanFactory.ID_DEFAULT_HORIZONTAL_ALIGNMENT, (String) m_view.getSelectedItem(UserPreferencesNames.ID_LABEL_H_ALIGN));
 		TSUserPropertiesUtils.setString(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS, (String) getSelectedItem(UserPreferencesNames.ID_DEFAULT_RESIZE_UNITS));
-
+		
+		TSUserPropertiesUtils.setString(UserPreferencesNames.ID_MEMBER_PREFIX,FormDesignerUtils.fastTrim(getText(UserPreferencesNames.ID_MEMBER_PREFIX)));
+		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_INCLUDE_MAIN,isSelected(UserPreferencesNames.ID_INCLUDE_MAIN));
+		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_INCLUDE_CTOR, isSelected(UserPreferencesNames.ID_INCLUDE_CTOR));
+		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_INCLUDE_NONSTANDARD, isSelected(UserPreferencesNames.ID_INCLUDE_NONSTANDARD));
+		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_INCLUDE_LOADIMAGE, isSelected(UserPreferencesNames.ID_INCLUDE_LOADIMAGE));
+		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_INCLUDE_BINDING, isSelected(UserPreferencesNames.ID_INCLUDE_BINDING));
+		TSUserPropertiesUtils.setBoolean(UserPreferencesNames.ID_BUILD_CONSTANT,isSelected(UserPreferencesNames.ID_BUILD_CONSTANT));
 	}
 }

@@ -21,12 +21,12 @@ package com.jeta.swingbuilder.gui.components;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.FormLayout;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.i18n.I18N;
 import com.jeta.open.rules.JETARule;
 import com.jeta.open.rules.RuleResult;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * This panel shows two text fields that allow a user to specify the number of

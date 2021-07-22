@@ -35,8 +35,8 @@ import java.io.StringReader;
 
 import com.jeta.forms.gui.common.parsers.FormSpecParser;
 import com.jeta.forms.logger.FormsLogger;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 
 /**
  * A <code>FormSpecAdapter</code> is used to correctly encode and decode a

@@ -26,6 +26,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import com.jeta.forms.store.properties.BooleanProperty;
 import com.jeta.swingbuilder.gui.properties.JETAPropertyEditor;
 
 public class BooleanEditor extends JETAPropertyEditor {
@@ -65,6 +66,7 @@ public class BooleanEditor extends JETAPropertyEditor {
 	}
 
 	public Component getCustomEditor() {
+		if(isCustom()) m_cbox.setEnabled(isEnabled());
 		return m_panel;
 	}
 
@@ -91,18 +93,27 @@ public class BooleanEditor extends JETAPropertyEditor {
 	public void setValue(Object value) {
 		super.setValue(value);
 		if (value != null) {
+			Boolean bval = false;
+			if (value instanceof Boolean) {
+				bval = (Boolean) value;
+			}else if (value instanceof BooleanProperty) {
+				bval = ((BooleanProperty)value).getValue();
+			}else{
+				System.out.println("error "+this.getClass().getSimpleName()+"::"+value.getClass().getName());
+				return;
+			}
 			try {
-				m_cbox.setText(value.toString());
-				if (m_cbox.isSelected() != ((Boolean) value).booleanValue()) {
+				m_cbox.setText(bval.toString());
+				if (m_cbox.isSelected() != bval) {
 					// Don't call setSelected unless the state actually changes
 					// to avoid a loop.
-					m_cbox.setSelected(((Boolean) value).booleanValue());
+					m_cbox.setSelected(bval);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
-
+		m_cbox.setEnabled(isEnabled());
 	}
 
 	public Object getValue() {

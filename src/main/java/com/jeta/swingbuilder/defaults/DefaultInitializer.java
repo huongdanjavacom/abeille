@@ -22,18 +22,19 @@ import com.jeta.forms.beanmgr.BeanManager;
 import com.jeta.forms.gui.components.ContainedFormFactory;
 import com.jeta.forms.gui.form.FormComponentFactory;
 import com.jeta.forms.gui.form.GridOverlayFactory;
-import com.jeta.forms.project.ProjectManager;
 import com.jeta.forms.support.UserProperties;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.open.support.ComponentFinderFactory;
+import com.jeta.swingbuilder.codegen.builder.DefaultSourceBuilder;
 import com.jeta.swingbuilder.codegen.builder.PropertyWriterFactory;
+import com.jeta.swingbuilder.codegen.builder.SourceBuilder;
 import com.jeta.swingbuilder.gui.beanmgr.DefaultBeanManager;
 import com.jeta.swingbuilder.gui.colorchooser.DefaultColorChooserFactory;
 import com.jeta.swingbuilder.gui.components.DefaultContainedFormFactory;
+import com.jeta.swingbuilder.gui.componentstoolbar.ComponentsToolBarManager;
+import com.jeta.swingbuilder.gui.componentstoolbar.DefaultComponentsToolBarManager;
 import com.jeta.swingbuilder.gui.editor.DesignFormComponentFactory;
 import com.jeta.swingbuilder.gui.editor.DesignGridOverlayFactory;
-import com.jeta.swingbuilder.gui.lookandfeel.DefaultLookAndFeelManager;
-import com.jeta.swingbuilder.project.DefaultProjectManager;
 import com.jeta.swingbuilder.support.DesignTimeComponentFinderFactory;
 import com.jeta.swingbuilder.support.DesignerUserProperties;
 
@@ -49,9 +50,7 @@ public class DefaultInitializer {
 	 */
 	public static void initialize() {
 		com.jeta.forms.logger.FormsLogger.debug("SwingBuilder. default initializer");
-		JETARegistry.rebind(ProjectManager.COMPONENT_ID, new DefaultProjectManager());
 		JETARegistry.rebind(BeanManager.COMPONENT_ID, new DefaultBeanManager());
-		JETARegistry.rebind(DefaultLookAndFeelManager.COMPONENT_ID, new DefaultLookAndFeelManager());
 		JETARegistry.rebind(GridOverlayFactory.COMPONENT_ID, new DesignGridOverlayFactory());
 		JETARegistry.rebind(FormComponentFactory.COMPONENT_ID, new DesignFormComponentFactory());
 		JETARegistry.rebind(ComponentFinderFactory.COMPONENT_ID, new DesignTimeComponentFinderFactory());
@@ -59,6 +58,7 @@ public class DefaultInitializer {
 		JETARegistry.rebind(ContainedFormFactory.COMPONENT_ID, new DefaultContainedFormFactory());
 		JETARegistry.rebind(PropertyWriterFactory.COMPONENT_ID, new PropertyWriterFactory());
 		JETARegistry.rebind(DefaultColorChooserFactory.COMPONENT_ID, new DefaultColorChooserFactory());
+		JETARegistry.rebind(ComponentsToolBarManager.COMPONENT_ID, new DefaultComponentsToolBarManager());
 
 		JETARegistry.rebind("AbeilleForms.runTime", Boolean.valueOf(false));
 	}

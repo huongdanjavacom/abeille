@@ -18,14 +18,16 @@
 
 package com.jeta.swingbuilder.main;
 
-import com.jeta.open.registry.JETARegistry;
-import com.jeta.swingbuilder.app.UserPropertiesStore;
-import com.jeta.swingbuilder.common.ComponentNames;
-import com.jeta.swingbuilder.gui.main.MainFrame;
-import com.jeta.swingbuilder.gui.main.MainFrameController;
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.JFrame;
+
+import com.jeta.open.gui.framework.JETADialog;
+import com.jeta.open.gui.utils.JETAToolbox;
+import com.jeta.swingbuilder.gui.main.MainPanel;
 import com.jeta.swingbuilder.gui.main.Splash;
-import com.jeta.swingbuilder.gui.utils.FormDesignerUtils;
-import com.jeta.swingbuilder.interfaces.app.ObjectStore;
 
 /**
  * This is the main launcher class for the application.
@@ -40,52 +42,31 @@ public class AbeilleForms {
 	}
 
 	/**
-	 * Launches the application and displays the frame window
-	 * 
-	 * @param args
-	 *            command line arguments
-	 */
-	public void launch(String[] args) {
-		launch(args, true);
-	}
-
-	/**
 	 * Launches the application and optionally displays the frame window. This
 	 * method is needed for command line utilities that depend on the designer
 	 * platform but don't show the main frame window.
 	 * 
 	 * @param args
 	 *            command line arguments
-	 * @param showFrame
+	 * @param showSplash
 	 *            true if the main frame is displayed. False otherwise.
 	 */
-	public void launch(String[] args, boolean showFrame) {
+	public void launch(String[] args, boolean showSplash) {
 		try {
-			/** for Mac OS X menu bar integration */
-			System.setProperty("apple.laf.useScreenMenuBar", "true");
-			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Abeille Forms Designer");
+			if (showSplash)
+				m_splash = new Splash();
 
-			if (!FormDesignerUtils.isDebug()) {
-				System.setOut(new java.io.PrintStream(new EmptyStream()));
-			}
+			FormsInitializer.initialize(args);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		if (showFrame)
-			m_splash = new Splash();
-
-		try {
-			FormsInitializer ji = new FormsInitializer();
-			ji.initialize(args);
-			launchComponents(showFrame);
+			launchFrame(showSplash);
+			//launchDialog(showSplash);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);
 		}
 	}
-
+	
 	/**
 	 * Launched base components needed by the rest of the application
 	 * 
@@ -93,51 +74,47 @@ public class AbeilleForms {
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	private void launchComponents(boolean showFrame) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-		UserPropertiesStore ups = new UserPropertiesStore();
-		ups.startup();
+	private void launchFrame(boolean showSplash) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 
-		if (showFrame) {
-			MainFrameController.setDefaultLookAndFeel();
+		if (showSplash && m_splash != null) {
 			m_splash.dispose();
 		}
 
-		MainFrame mframe = new MainFrame();
-		if (showFrame)
-			mframe.show();
-	}
+		JFrame frame = new JFrame();
+		frame.setTitle(com.jeta.forms.support.AbeilleForms.getAbeilleTitle());
+		frame.setSize(1024, 768);
+		frame.setLocationRelativeTo(null);
+		frame.getContentPane().add(new MainPanel());
+		frame.setVisible(true);
 
-	public static void shutdown() {
-		try {
-			try {
-				Object obj = JETARegistry.lookup(UserPropertiesStore.COMPONENT_ID);
-				if (obj instanceof UserPropertiesStore) {
-					UserPropertiesStore userstore = (UserPropertiesStore) obj;
-					userstore.shutdown();
-				}
-
-				// save the main application state
-				ObjectStore os = (ObjectStore) JETARegistry.lookup(ComponentNames.APPLICATION_STATE_STORE);
-				os.flush();
-			} catch (Exception e) {
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent evt) {
+				System.exit(0);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.exit(0);
+		});
+	
 	}
 
-	/**
-	 * Trap all system.out
-	 */
-	private class EmptyStream extends java.io.OutputStream {
-		public void write(byte[] b) throws java.io.IOException {
-			// ignore
+	private void launchDialog(boolean showSplash) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+
+		if (showSplash && m_splash != null) {
+			m_splash.dispose();
 		}
 
-		public void write(int ival) throws java.io.IOException {
-			// ignore
-		}
+		JETADialog dlg = (JETADialog) JETAToolbox.createDialog(JETADialog.class, null, true);
+		dlg.setTitle(com.jeta.forms.support.AbeilleForms.getAbeilleTitle());
+		dlg.setPrimaryPanel(new MainPanel());
+		Dimension size = dlg.getPreferredSize();
+		size.setSize(size.getWidth(), size.getHeight() + 20);
+		dlg.setSize(size);
+		dlg.showOkButton(false);
+		dlg.getCloseButton().setVisible(false);
+		dlg.setResizable(true);
+		dlg.showCenter();
+
 	}
 
+	
+	
+	
 }

@@ -23,8 +23,10 @@ import java.lang.reflect.Method;
 
 import com.jeta.forms.gui.beans.JETAPropertyDescriptor;
 import com.jeta.forms.store.properties.ColorHolder;
+import com.jeta.forms.store.properties.ColorProperty;
+import com.jeta.forms.store.properties.ColorProperty2;
+import com.jeta.swingbuilder.codegen.builder.BaseBeanWriter;
 import com.jeta.swingbuilder.codegen.builder.BasicExpression;
-import com.jeta.swingbuilder.codegen.builder.BeanWriter;
 import com.jeta.swingbuilder.codegen.builder.DeclarationManager;
 import com.jeta.swingbuilder.codegen.builder.Expression;
 import com.jeta.swingbuilder.codegen.builder.MethodExpression;
@@ -36,13 +38,21 @@ public class ColorPropertyWriter implements PropertyWriter {
 	/**
 	 * PropertyWriter implementation
 	 */
-	public void writeProperty(DeclarationManager declMgr, BeanWriter writer, JETAPropertyDescriptor pd, Object value) {
+	public void writeProperty(DeclarationManager declMgr, BaseBeanWriter writer, JETAPropertyDescriptor pd, Object value) {
 		try {
 			Color c = null;
-			if (value instanceof Color)
+			if (value instanceof Color){
 				c = (Color) value;
-			else if (value instanceof ColorHolder)
+			}else if (value instanceof ColorHolder){
 				c = ((ColorHolder) value).getColor();
+			}else if (value instanceof ColorProperty){
+				c = ((ColorProperty) value).getColor();
+			}else if (value instanceof ColorProperty2){
+				c = ((ColorProperty2) value).getValue();
+			}else {
+				System.out.println("error "+this.getClass().getSimpleName()+"::"+value.getClass().getName());
+				return;
+			}
 
 			Method write = pd.getWriteMethod();
 			if (c != null && write != null) {

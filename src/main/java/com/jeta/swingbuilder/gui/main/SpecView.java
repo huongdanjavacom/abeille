@@ -31,15 +31,15 @@ import com.jeta.forms.gui.form.GridView;
 import com.jeta.forms.gui.form.GridViewEvent;
 import com.jeta.forms.gui.form.GridViewListener;
 import com.jeta.forms.store.memento.FormGroupSet;
+import com.jeta.jgoodies.forms.layout.CellConstraints;
+import com.jeta.jgoodies.forms.layout.ColumnSpec;
+import com.jeta.jgoodies.forms.layout.FormLayout;
+import com.jeta.jgoodies.forms.layout.RowSpec;
 import com.jeta.open.gui.framework.JETAPanel;
 import com.jeta.open.registry.JETARegistry;
 import com.jeta.swingbuilder.gui.components.FloatDocument;
 import com.jeta.swingbuilder.gui.editor.FormEditor;
 import com.jeta.swingbuilder.gui.formmgr.EditorManager;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * Displays the column and row settings.
@@ -99,7 +99,7 @@ public class SpecView extends JETAPanel implements GridViewListener, FormSpecDef
 	 *         LEFT, CENTER, RIGHT, RILL row: TOP, CENTER, BOTTOM, RILL
 	 */
 	public String getAlignment() {
-		return (String) m_spec_panel.getComboBox(SpecViewNames.ID_ALIGNMENT_COMBO).getSelectedItem();
+		return (String) m_spec_panel.getComboBox(SpecViewNames.ID_ALIGNMENT_COMBO).getSelectedItem().toString();
 	}
 
 	/**
@@ -116,14 +116,14 @@ public class SpecView extends JETAPanel implements GridViewListener, FormSpecDef
 	 * @return the component size: MIN, PREF, DEFAULT
 	 */
 	public String getComponentSize() {
-		return (String) m_spec_panel.getComboBox(SpecViewNames.ID_COMP_SIZE_COMBO).getSelectedItem();
+		return (String) m_spec_panel.getComboBox(SpecViewNames.ID_COMP_SIZE_COMBO).getSelectedItem().toString();
 	}
 
 	/**
 	 * @return the units (integer) (double) PX, PT, DLU IN, MM, CM
 	 */
 	public String getConstantUnits() {
-		return (String) m_spec_panel.getComboBox(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO).getSelectedItem();
+		return (String) m_spec_panel.getComboBox(SpecViewNames.ID_CONST_SIZE_UNITS_COMBO).getSelectedItem().toString();
 	}
 
 	/**
