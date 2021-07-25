@@ -117,7 +117,7 @@ public class FormsInitializer {
 
 				com.jeta.open.i18n.I18NHelper oi18n = com.jeta.open.i18n.I18NHelper.getInstance();
 				oi18n.setLocale(locale);
-				oi18n.loadBundle("com.jeta.swingbuilder.resources.MessagesBundle");
+				oi18n.loadBundle("MessagesBundle");
 
 				// load global application user settings
 				ApplicationStateStore appstore = new ApplicationStateStore("application");
