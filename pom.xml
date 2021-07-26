@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.huongdanjava</groupId>
 	<artifactId>abeille</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>3.0.0</version>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -64,7 +64,14 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.jeta.swingbuilder.main.Launcher</mainClass>
+									<manifestEntries>
+										<Main-Class>com.jeta.swingbuilder.main.Launcher</Main-Class>
+										<Specification-Title>${project.artifactId}</Specification-Title>
+										<Specification-Version>${project.version}</Specification-Version>
+										<Implementation-Title>${project.artifactId}</Implementation-Title>
+										<Implementation-Version>${project.version}</Implementation-Version>
+										<Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+									</manifestEntries>
 								</transformer>
 							</transformers>
 						</configuration>
